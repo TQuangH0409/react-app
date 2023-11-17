@@ -1,13 +1,13 @@
 import './App.css';
 import Navbar from "./components/header/Navbar";
-import Menu from './components/menu/Menu';
+import Sidebar from './components/sidebar/sidebar';
 import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 
 function App() {
   return (
     <div className="App">
-      <div className='menu'>
-        <Menu />
+      <div className='sidebar'>
+        <Sidebar />
       </div>
       <div className='container'>
         <div className='headerContainer'>

@@ -1,0 +1,24 @@
+.sidebar{
+    width: 224px;
+    overflow: hidden;
+    border-right: solid 1px black;
+    background-color: #f2f1eb;
+}
+
+.sidebar-logo{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+}
+
+.sidebar-brand-icon{
+    width: 160px;
+    padding: 24px 0 24px 0;
+}
+
+.sidebar-img{
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
