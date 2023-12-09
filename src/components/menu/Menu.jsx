@@ -1,8 +1,9 @@
 import React from 'react'
 
 const Menu = () => {
+  const styleObject = {backgroundColor: 'red', color: 'white', width: "300px"}
   return (
-    <div className='menu'>Menu</div>
+    <div style={styleObject} className='menu'>Menu</div>
   )
 }
 

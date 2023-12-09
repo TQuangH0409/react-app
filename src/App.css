@@ -1,0 +1,13 @@
+@import url("./components/Input/Input.css");
+@import url("./reset.css");
+
+html {
+    font-family: sans-serif;
+}
+
+.app-container{
+    display: flex;
+}
+.app-container-right{
+    flex: 1;
+}
