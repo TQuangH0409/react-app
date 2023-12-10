@@ -1,24 +1,27 @@
 import './App.css';
-import Navbar from "./components/header/Navbar";
-import Sidebar from './components/sidebar/sidebar';
-import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import {  BrowserRouter as Router,  Routes,  Route} from "react-router-dom";
+import PublicRoutes from './routes/index';
+import DefaultLayout from './Layout/defaultLayout/Layout'
 
 function App() {
   return (
-    <div className="App">
-      <div className='sidebar'>
-        <Sidebar />
+    <Router>
+      <div className="App">
+        <Routes>
+          {PublicRoutes.map((route, index) => {
+            const Page = route.component;
+            const Layout = route.layout || DefaultLayout;
+            return <Route key={index} path={route.path}
+              element={
+                <Layout>
+                  <Page />
+                </Layout>} />
+          })}
+        </Routes>
       </div>
-      <div className='container'>
-        <div className='headerContainer'>
-          <Navbar />
-        </div>
-        <div className='contentContainer'>
-          //...
-        </div>
-      </div>
-    </div>
+    </Router>
   );
 }
+
 
 export default App;

@@ -1,8 +1,7 @@
 .sidebar{
-    width: 224px;
     overflow: hidden;
     border-right: solid 1px black;
-    background-color: #f2f1eb;
+    background-color: white;
 }
 
 .sidebar-logo{
@@ -21,4 +20,8 @@
     width: 100%;
     margin-left: auto;
     margin-right: auto;
+}
+
+.ant-menu-item{
+    padding-left: 12px !important;
 }

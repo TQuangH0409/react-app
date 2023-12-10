@@ -554,8 +554,7 @@
     width: 100%;
     padding-right: 0.75rem;
     padding-left: 0.75rem;
-    margin-right: auto;
-    margin-left: auto;
+
   }
   
   @media (min-width: 576px) {
@@ -578,7 +577,8 @@
   
   @media (min-width: 1200px) {
     .container, .container-sm, .container-md, .container-lg, .container-xl {
-      max-width: 1140px;
+      max-width: 1236px;
+      overflow: hidden;
     }
   }
   
@@ -10509,7 +10509,7 @@
   
   @media (min-width: 768px) {
     .sidebar {
-      width: 14rem !important;
+      width: 15rem !important;
     }
     .sidebar .nav-item .collapse {
       position: relative;
