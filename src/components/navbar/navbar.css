@@ -1,40 +1,4 @@
-.v-navbar-container {
-    height: 88px;
-    width: 100%;
-    background-color: #ccc;
-    flex: 1;
-}
-
-.v-navbar-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 29px;
-}
-
-.v-navbar-right{
-    display: flex;
-    align-items: center;
-}
-.v-navbar-search{
-    font-size: 20px;
-}
-.v-navbar-mail{
-    font-size: 20px;
-    margin-left: 24px;
-
-}
-.v-navbar-bell{
-    font-size: 20px;
-    margin: 0 24px;
-
-}
-.v-navbar-three-dots{
-    font-size: 20px;
-    margin-right: 24px;
-}
-.v-navbar-inner img {
-    border-radius: 50%;
-    height: 32px ;
+img{
     width: 32px;
+    height: 32px;
 }
