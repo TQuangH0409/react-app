@@ -1,0 +1,41 @@
+.v-formLogin-container{
+    background-color: #fff;
+    width: 598px;
+    height: 682px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 30px;
+    border: 1px solid #B3B3B3;
+}
+h1{
+    font-size: 45px;
+}
+.v-formLogin-inner{
+    margin: 80px 72px 152px;
+}
+.v-formLogin-footer{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 32px 0;
+    width: 100%;
+}
+.v-formLogin-footer a{
+    color:#6C88ED;
+}
+.v-formLogin-footer-left{
+    display: flex;
+    align-items: center;
+}
+.v-formLogin-footer-left input{
+    margin-right: 16px;
+    width: 22px;
+    height: 22px;
+}
+.v-formLogin-button {
+    height: 55px;
+    width: 100%;
+    background-color: #C18FF5;
+    color: #fff;
+    border-radius: 10px;
+}
