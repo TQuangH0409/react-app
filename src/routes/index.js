@@ -13,7 +13,6 @@ const publicRoutes = [
   {path: '/admin/list-field-of-study', component: ListFieldOfStudy},
   {path: '/admin/assigned-instructions', component: AssignedInstruction},
   {path: '/admin/assign-criticism', component: AssignCriticism}
-  {path: '/student/info', component: infoStudent}
 
 ]
 

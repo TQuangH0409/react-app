@@ -110,11 +110,11 @@ const AssignCriticism = props => {
 
         <div className='list-student mb-4'>
             <div className='content-header py-3'>
-                <h6 className='m-0 font-weight-bold text-primary'>Danh sách sinh viên</h6>
+                <h6 className='m-0 font-weight-bold text-primary'>Danh sách phân công phản biện</h6>
 
 
                 <div className='select-semester'>
-                    <span style={{ color: "black" }} >Kỳ học: </span>
+                    <span style={{ color: "black" }, {marginLeft: "10px"}} >Kỳ học: </span>
                     <Select defaultValue="20231" style={{ width: 120 }} >
                         <Option value="20231">20231</Option>
 
