@@ -3,7 +3,6 @@ import "./sidebar.css"
 import { Menu } from 'antd'
 import { BrowserRouter as Router,  Routes,  Route, Link } from "react-router-dom";
 
-const SubMenu = Menu.SubMenu;
 const Sidebar = ({ user }) => {
 
     return (
@@ -19,7 +18,7 @@ const Sidebar = ({ user }) => {
 
             <div >
                 {/*admin */}
-                {{/*user.isAdmin*/} && <Menu mode='inline'>
+                {/* {user.isAdmin &&*/} <Menu mode='inline'> 
                     <Menu.Item key="list-student">
                         Danh sách sinh viên
                         <Link to="/admin/list-student"></Link>
@@ -70,20 +69,37 @@ const Sidebar = ({ user }) => {
                 </Menu>  */}
                 {/*teacher */}
 
-                {/* {user.isTeacher} && <Menu>
-                    <Menu.Item key="student-information">
+                {/* {user.isTeacher} && */}<Menu> 
+                    <Menu.Item key="teacher">
                         Thông tin cá nhân
-                        <Link to="/"></Link>
+                        <Link to="/teacher"></Link>
                     </Menu.Item>
-                    <hr className="sidebar-divider my-0"></hr>
 
-                    <Menu.Item key="project-iformation">
+                    <hr className="sidebar-divider my-0"></hr>
+                    <Menu.Item key="list-project">
+                        Danh sách đồ
+                        <Link to="/list-project"></Link>
+                    </Menu.Item>
+
+                    <hr className="sidebar-divider my-0"></hr>
+                    <Menu.Item key="info-project">
                         Thông tin đồ án
-                        <Link to="/"></Link>
+                        <Link to="/info-project"></Link>
+                    </Menu.Item>
+
+                    <hr className="sidebar-divider my-0"></hr>
+                    <Menu.Item key="list-review-project">
+                        Danh sách đồ án phản biện
+                        <Link to="/list-review-project"></Link>
+                    </Menu.Item>
+                    
+                    <hr className="sidebar-divider my-0"></hr>
+                    <Menu.Item key="list-assignment">
+                        Danh sách sinh viên được phân công hướng dẫn
+                        <Link to="/list-assignment"></Link>
                     </Menu.Item>
                     <hr className="sidebar-divider my-0"></hr>
-                    
-                </Menu>*/}
+                </Menu>
             </div>
         </div>
     )

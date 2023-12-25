@@ -17,7 +17,7 @@ import {
   FileAddOutlined,
   DeleteOutlined, FormOutlined, EyeOutlined
 } from '@ant-design/icons';
-import type { ColumnsType, TablePaginationConfi } from 'antd/es/table';
+import type { ColumnsType, TablePaginationConfig } from 'antd/lib/table';
 
 const { Search } = Input;
 const onSearch = (value, _e, info) => console.log(info?.source, value);
@@ -30,7 +30,7 @@ const ListTeacher = () => {
       class: 'test',
     }]
 
-
+    
 
   const [modal1Open, setModal1Open] = useState(false);
   const [modal2Open, setModal2Open] = useState(false);
@@ -160,7 +160,7 @@ const ListTeacher = () => {
             );
             setDataSource(filteredData);
           }}
-          placeholder="Tìm kiếm"
+          placeholder ="Tìm kiếm"
           onSearch={onSearch}
           style={{
             width: 500,
