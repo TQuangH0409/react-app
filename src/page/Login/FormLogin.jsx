@@ -1,14 +1,26 @@
+import { useState } from "react";
 import Input from "../../components/Input/input";
 import "./FormLogin.css";
+import axios from "axios"
 function FormLogin({ errorLogin = false }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const login = async () => {
+    const res = await axios.post(`http://35.213.168.72:6801/api/v1/auth/login`, {email: email, password: password})
+  }
+
   return (
     <div>
       <div className="v-formLogin-container">
         <div className="v-formLogin-inner">
           <h1>Đăng nhập</h1>
-          <Input label={"Email"} placeholder={"Example@gmail.com"} />
+          <Input label={"Email"} placeholder={"Example@gmail.com"} onChange={(e) => {
+            setEmail(e.target.value);
+          }}/>
 
-          <Input label={"Mật khẩu"} placeholder={"Nhập mật khẩu"} />
+          <Input label={"Mật khẩu"} placeholder={"Nhập mật khẩu"} onChange={(e) => {
+            setPassword(e.target.value)};
+          } />
 
           {errorLogin && (
             <div>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios';
 import {
   Button, Modal, Cascader,
   DatePicker,
@@ -22,13 +23,48 @@ import type { ColumnsType, TablePaginationConfi } from 'antd/es/table';
 const { Search } = Input;
 const onSearch = (value, _e, info) => console.log(info?.source, value);
 const ListTeacher = () => {
-  const data = [
-    {
+  const [data, setData] = useState([]);
+  const dataTable =
+    data?.length &&
+    data?.map((value) => {
+      console.log(value.research_area)
+      
+      return {
+        ...value,
+        key: value.id,
+        research_area: value?.research_area?.map((val) => val.name
+        ).join(', '),
+      };
+    });
+  const login = async () => {
+    const res = await axios.post(`http://35.213.168.72:6801/api/v1/auth/login`, { email: "quang.vt198256@sis.hust.edu.vn", password: "1" })
+    if (res) {
+      const token = res.data.accessToken;
+      localStorage.setItem("token", token);
+    }
+  }
+  useEffect(() => {
+    login()
+  }, [])
 
-      name: 'test',
-      msgv: 32,
-      class: 'test',
-    }]
+  const getAllTeacher = () => {
+    const token = localStorage.getItem("token");
+    console.log("token", token)
+    axios.get(`http://35.213.168.72:6801/api/v1/users/position?position=TEACHER`, {
+      headers: {
+        token: token
+      }
+    })
+      .then(res => {
+        console.log(res.data)
+        setData(res.data);
+      })
+      .catch(error => console.log(error));
+  }
+
+  useEffect(() => {
+    getAllTeacher()
+  }, [])
 
 
 
@@ -37,7 +73,6 @@ const ListTeacher = () => {
   const Option = Select.Option;
   const [page, setPage] = useState(1);
   const [paginationSize, setPaginationSize] = useState(10)
-  const [dataSource, setDataSource] = useState(data);
   const [value, setValue] = useState('');
 
   const columns: ColumnsType<DataType> = [
@@ -48,12 +83,14 @@ const ListTeacher = () => {
     },
     {
       title: 'Tên hiển thị',
-      dataIndex: 'name',
+      dataIndex: 'fullname',
       render: (text: string) => <a>{text}</a>,
+      key:'fullname'
     },
     {
       title: 'Mã số giảng viên',
-      dataIndex: 'msgv',
+      dataIndex: 'number',
+      key:'number'
     },
     {
       title: 'Cấp bậc',
@@ -61,7 +98,7 @@ const ListTeacher = () => {
     },
     {
       title: 'Trường/Viện',
-      dataIndex: 'School',
+      dataIndex: 'school',
     },
     {
       title: 'Email',
@@ -69,7 +106,7 @@ const ListTeacher = () => {
     },
     {
       title: 'Lĩnh vực nghiên cứu',
-      dataIndex: 'study',
+      dataIndex: 'research_area',
     },
     {
       title: 'Tác vụ',
@@ -128,6 +165,19 @@ const ListTeacher = () => {
             </Form.Item>
             <Form.Item label="Trường/Viện:">
               <Select>
+                <Select.Option value="demo">Trường Công nghệ Thông tin và Truyền thông</Select.Option>
+                <Select.Option value="demo">Trường Điện - Điện tử</Select.Option>
+                <Select.Option value="demo">Trường Hoá và Khoa học sự sống</Select.Option>
+                <Select.Option value="demo">Trường Vật liệu</Select.Option>
+                <Select.Option value="demo">Viện Toán ứng dụng và Tin học</Select.Option>
+                <Select.Option value="demo">Viện Vật lý Kỹ thuật</Select.Option>
+                <Select.Option value="demo">Viện Kinh tế và Quản lý</Select.Option>
+                <Select.Option value="demo">Viện Ngoại ngữ</Select.Option>
+                <Select.Option value="demo">Viện Sư phạm Kỹ thuật</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item label="Lĩnh vực nghiên cứu">
+              <Select>
                 <Select.Option value="demo">Demo</Select.Option>
               </Select>
             </Form.Item>
@@ -158,7 +208,7 @@ const ListTeacher = () => {
             const filteredData = data.filter(entry =>
               entry.name.includes(currValue)
             );
-            setDataSource(filteredData);
+            setData(filteredData);
           }}
           placeholder="Tìm kiếm"
           onSearch={onSearch}
@@ -173,9 +223,6 @@ const ListTeacher = () => {
 
       <div className='content-main'>
         <Table className='table-list-student'
-          rowSelection={{
-            type: "Checkbox",
-          }}
           pagination={{
             onChange(current, pageSize) {
               setPage(current);
@@ -184,7 +231,7 @@ const ListTeacher = () => {
             defaultPageSize: 10, hideOnSinglePage: true, showSizeChanger: true
           }}
           columns={columns}
-          dataSource={dataSource}
+          dataSource={dataTable}
         />
       </div>
     </div >
