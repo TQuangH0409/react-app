@@ -1,102 +1,80 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
-import {
-  Button,
-  Modal,
-  Form,
-  Input,
-  Select,
-  Table,
-  message,
-  Upload,
-} from "antd";
+import { Button, Input, Table } from "antd";
 import "../../adminRole/globalCSS.css";
-import {
-  UserAddOutlined,
-  FileAddOutlined,
-  DeleteOutlined,
-  FormOutlined,
-  EyeOutlined,
-  InboxOutlined,
-} from "@ant-design/icons";
-import type { ColumnsType, TablePaginationConfi } from "antd/es/table";
+import { EyeOutlined, FormOutlined } from "@ant-design/icons";
 
-interface DataType {}
+import getData from "../api/apiData.js";
+import axios from "axios";
 const { Search } = Input;
 const onSearch = (value, _e, info) => console.log(info?.source, value);
 export const ListProject = () => {
-  const data = [
-    {
-      topic_name: "Project III",
-      mark: "10/10",
-      student_name: "Nguyễn Trường Việt",
-      student_id: "20198273",
-      teacher_argument: "Nguyễn Đăng Hải",
-      createDate: "25-12-2023",
-      peopleCreate: "Nguyễn Trường Việt",
-    },
-  ];
-
-  const { Dragger } = Upload;
-  const [droppedFile, setDroppedFile] = useState(0);
-  const props = {
-    name: "file",
-    multiple: false,
-    maxCount: 1,
-    accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    action: "https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188",
-    beforeUpload: (file) => {
-      console.log(file);
-      if (droppedFile > 1) {
-        message.warning(
-          `Multiple files are not allowed. Only one CSV file will be uploaded at a time.`
-        );
-        return false;
-      }
-      if (
-        file.type !=
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      ) {
-        message.error(`Invalid file format. Please upload a CSV file.`);
-        return false;
-      }
-      return true;
-    },
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== "uploading") {
-        console.log(info.file, info.fileList);
-      }
-      if (status === "done") {
-        message.success(`${info.file.name} file uploaded successfully.`);
-      } else if (status === "error") {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
-    onDrop(e) {
-      console.log("Dropped files", e.dataTransfer.files);
-    },
-  };
-
-  const [modal1Open, setModal1Open] = useState(false);
-  const [modal2Open, setModal2Open] = useState(false);
-  const Option = Select.Option;
   const [page, setPage] = useState(1);
   const [paginationSize, setPaginationSize] = useState(10);
-  const [dataSource, setDataSource] = useState(data);
-  const [value, setValue] = useState("");
 
-  const columns: ColumnsType<DataType> = [
+  const [dataTable, setDataTable] = useState([]);
+  const [dataFake, setDataFake] = useState(dataTable);
+
+  const [value, setValue] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const login = async () => {
+    const res = await axios.post(
+      `http://35.213.168.72:8000/api/v1/auth/login`,
+      {
+        email: "quangh204299@gmail.com",
+        password: "1",
+      }
+    );
+    if (res) {
+      const token = res.data.accessToken;
+      localStorage.setItem("token", token);
+    }
+  };
+  useEffect(() => {
+    login();
+  }, []);
+
+  const getAllProject = async (current) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await getData(`/projects/?size=10&page=0`, {
+        headers: {
+          token: token,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setTimeout(async () => {
+        try {
+          const data = await getAllProject();
+          setDataTable(data.data);
+          setDataFake(data.data)
+          setLoading(false);
+        } catch (error) {
+          console.error("Error fetching student data:", error);
+        }
+      }, 1000);
+    };
+    fetchData();
+  }, []);
+
+  const columns = [
     {
       title: "ID",
       key: "index",
-      render: (text: string, record: any, index: number) =>
-        (page - 1) * paginationSize + index + 1,
+      render: (text, record, index) => (page - 1) * paginationSize + index + 1,
     },
     {
       title: "Tên đề tài",
-      dataIndex: "topic_name",
-      render: (text: string) => <a>{text}</a>,
+      dataIndex: "name",
     },
     {
       title: "Điểm",
@@ -104,6 +82,7 @@ export const ListProject = () => {
     },
     {
       title: "Sinh viên",
+      sorter: true,
       dataIndex: "student_name",
     },
     {
@@ -112,32 +91,27 @@ export const ListProject = () => {
     },
     {
       title: "Giảng viên phản biện",
-      dataIndex: "teacher_argument",
+      dataIndex: "teacher_instruct_id",
     },
     {
       title: "Ngày tạo",
-      dataIndex: "createDate",
+      dataIndex: "created_time",
     },
     {
       title: "Người tạo",
-      dataIndex: "peopleCreate",
+      dataIndex: "created_by",
     },
     {
       title: "Tác vụ",
       fixed: "right",
       width: 100,
-      render: () => (
+      render: (text, record) => (
         <div className="action-button" size="middle">
-          <Button className="button-view" shape="circle" icon={<EyeOutlined />}>
-            {" "}
-          </Button>
-          <Button className="button-fix" shape="circle" icon={<FormOutlined />}>
-            {" "}
-          </Button>
           <Button
-            className="button-delete"
+            href={`/teacher/info-project/${record.student_id}`}
+            className="button-view"
             shape="circle"
-            icon={<DeleteOutlined />}
+            icon={<EyeOutlined />}
           >
             {" "}
           </Button>
@@ -151,18 +125,17 @@ export const ListProject = () => {
       <div className="content-header py-3">
         <h6 className="m-0 font-weight-bold text-primary">Danh sách đồ án</h6>
         <Search
+        placeholder="Tên đề tài..."
           className="input-search"
-          placeholder="Search Name"
           value={value}
           onChange={(e) => {
-            const currValue = e.target.value;
-            setValue(currValue);
-            const filteredData = data.filter((entry) =>
-              entry.topic_name.toLowerCase().includes(currValue.toLowerCase())
+            const currentValue = e.target.value;
+            setValue(currentValue);
+            let filteredData = dataFake.filter((entry) =>
+              entry.name.toLowerCase().includes(currentValue.toLowerCase())
             );
-            setDataSource(filteredData);
+            setDataTable(filteredData);
           }}
-          placeholder="Tìm kiếm"
           onSearch={onSearch}
           style={{
             width: 500,
@@ -178,12 +151,13 @@ export const ListProject = () => {
               setPage(current);
               setPaginationSize(pageSize);
             },
-            defaultPageSize: 10,
-            hideOnSinglePage: true,
+            defaultPageSize: 20,
+            hideOnSinglePage: false,
             showSizeChanger: true,
           }}
           columns={columns}
-          dataSource={dataSource}
+          dataSource={dataTable}
+          loading={loading}
         />
       </div>
     </div>

@@ -7,7 +7,7 @@ const Sidebar = ({ user }) => {
 
     return (
         <div className='sidebar'>
-            <Link to="/admin" className='sidebar-logo ' href='#'>
+            <Link to="/info-teacher" className='sidebar-logo ' href='#'>
                 <div className="sidebar-brand-icon align-items-center justify-content-center">
                     <img className='sidebar-img' src="../img/logo-dai-hoc-bach-khoa.png" />
                 </div>
@@ -18,7 +18,8 @@ const Sidebar = ({ user }) => {
 
             <div >
                 {/*admin */}
-                {/* {user.isAdmin &&*/} <Menu mode='inline'> 
+                {/* {user.isAdmin &&*/} 
+                {/* <Menu mode='inline'>  
                     <Menu.Item key="list-student">
                         Danh sách sinh viên
                         <Link to="/admin/list-student"></Link>
@@ -49,7 +50,10 @@ const Sidebar = ({ user }) => {
                     </Menu.Item>
                     <hr className="sidebar-divider my-0"></hr>
                     </Menu>
-                }
+                    <hr></hr>
+                    <hr></hr>
+                    <hr></hr> */}
+
 
                 {/*student */}
                  {/* {user.isStudent} && <Menu>
@@ -72,31 +76,25 @@ const Sidebar = ({ user }) => {
                 {/* {user.isTeacher} && */}<Menu> 
                     <Menu.Item key="teacher">
                         Thông tin cá nhân
-                        <Link to="/teacher"></Link>
+                        <Link to="/info-teacher"></Link>
                     </Menu.Item>
 
                     <hr className="sidebar-divider my-0"></hr>
                     <Menu.Item key="list-project">
-                        Danh sách đồ
-                        <Link to="/list-project"></Link>
-                    </Menu.Item>
-
-                    <hr className="sidebar-divider my-0"></hr>
-                    <Menu.Item key="info-project">
-                        Thông tin đồ án
-                        <Link to="/info-project"></Link>
+                        Danh sách đồ án
+                        <Link to="/teacher/list-project"></Link>
                     </Menu.Item>
 
                     <hr className="sidebar-divider my-0"></hr>
                     <Menu.Item key="list-review-project">
                         Danh sách đồ án phản biện
-                        <Link to="/list-review-project"></Link>
+                        <Link to="/teacher/list-review-project"></Link>
                     </Menu.Item>
                     
                     <hr className="sidebar-divider my-0"></hr>
                     <Menu.Item key="list-assignment">
                         Danh sách sinh viên được phân công hướng dẫn
-                        <Link to="/list-assignment"></Link>
+                        <Link to="/teacher/list-assignment"></Link>
                     </Menu.Item>
                     <hr className="sidebar-divider my-0"></hr>
                 </Menu>
