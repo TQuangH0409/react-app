@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
+import * as XLSX from 'xlsx';
+import { getAllUserByPosition, getAllResearchArea, getUserById, optionYear, optionSchool, updateUserById, createUser, deleteUserById } from "../../../api/apiAdmin"
 import {
   Button, Modal, Cascader,
   DatePicker,
@@ -10,25 +12,49 @@ import {
   Select,
   Switch,
   TreeSelect,
-  Divider, Table, Space
+  Divider, Table, Space,
+  message, Upload,
+  SelectProps
 } from 'antd';
 import "../../adminRole/globalCSS.css"
 import {
   UserAddOutlined,
   FileAddOutlined,
-  DeleteOutlined, FormOutlined, EyeOutlined
+  DeleteOutlined, FormOutlined, EyeOutlined,
+  InboxOutlined, ExclamationCircleFilled
 } from '@ant-design/icons';
 import type { ColumnsType, TablePaginationConfi } from 'antd/es/table';
+const { confirm } = Modal;
 
 const { Search } = Input;
 const onSearch = (value, _e, info) => console.log(info?.source, value);
 const ListTeacher = () => {
+  const [modal1Open, setModal1Open] = useState(false);
+  const [modal2Open, setModal2Open] = useState(false);
+  const [modalView, setModalView] = useState(false);
+  const [modalUpdate, setModalUpdate] = useState(false);
+  const [modalExcel, setModalExcel] = useState(false);
+
+  const Option = Select.Option;
+  const [page, setPage] = useState(1);
+  const [paginationSize, setPaginationSize] = useState(10)
+  const [value, setValue] = useState('');
+  const { Dragger } = Upload;
+  const [droppedFile, setDroppedFile] = useState();
+  const [tableDataExcel, setTableDataExcel] = useState([]);
+  const [columnsExcel, setColumnsExcel] = useState([]);
+  const [detail] = Form.useForm();
+  const [update] = Form.useForm();
+  const [create] = Form.useForm();
+
   const [data, setData] = useState([]);
+  const [dataResearch, setDataResearch] = useState([]);
+  const [dataTeacher, setDataTeacher] = useState();
+  const [id, setId] = useState();
   const dataTable =
     data?.length &&
     data?.map((value) => {
-      console.log(value.research_area)
-      
+
       return {
         ...value,
         key: value.id,
@@ -36,8 +62,16 @@ const ListTeacher = () => {
         ).join(', '),
       };
     });
+  const dataSelect =
+    dataResearch?.length &&
+    dataResearch.map((value) => {
+      return {
+        value: value.name,
+        label: value.name,
+      }
+    });
   const login = async () => {
-    const res = await axios.post(`http://35.213.168.72:6801/api/v1/auth/login`, { email: "quang.vt198256@sis.hust.edu.vn", password: "1" })
+    const res = await axios.post(`http://35.213.168.72:8000/api/v1/auth/login`, { email: "quang.vt198256@sis.hust.edu.vn", password: "X9)e=P_CE!Yw" })
     if (res) {
       const token = res.data.accessToken;
       localStorage.setItem("token", token);
@@ -47,33 +81,110 @@ const ListTeacher = () => {
     login()
   }, [])
 
-  const getAllTeacher = () => {
-    const token = localStorage.getItem("token");
-    console.log("token", token)
-    axios.get(`http://35.213.168.72:6801/api/v1/users/position?position=TEACHER`, {
-      headers: {
-        token: token
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAllUserByPosition("TEACHER");
+        setData(data);
+      } catch (error) {
+        console.error('Error fetching student data:', error);
       }
-    })
-      .then(res => {
-        console.log(res.data)
-        setData(res.data);
-      })
-      .catch(error => console.log(error));
-  }
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
-    getAllTeacher()
-  }, [])
+    const fetchData = async () => {
+      try {
+        const data = await getAllResearchArea();
+        setDataResearch(data)
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+      }
+    };
+    fetchData();
+  }, []);
 
+  const props = {
+    name: 'file',
+    multiple: false,
+    maxCount: 1,
+    accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    action: 'https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188',
+    beforeUpload: file => {
+      console.log(file);
+      if (droppedFile > 1) {
+        message.warning(`Multiple files are not allowed. Only one CSV file will be uploaded at a time.`);
+        return false;
+      }
+      if (file.type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        message.error(`Invalid file format. Please upload a CSV file.`);
+        return false;
+      }
+      setDroppedFile(file);
+    },
+    onChange(info) {
+      const { status } = info.file;
+      if (status !== 'uploading') {
+        console.log(info.file, info.fileList);
+      }
+      if (status === 'done') {
+        message.success(`${info.file.name} file uploaded successfully.`);
+      } else if (status === 'error') {
+        message.error(`${info.file.name} file upload failed.`);
+      }
+    },
+    onDrop(e) {
+      console.log('Dropped files', e.dataTransfer.files);
+    },
+  };
 
+  const handleFileUpload = (file) => {
+    const reader = new FileReader();
 
-  const [modal1Open, setModal1Open] = useState(false);
-  const [modal2Open, setModal2Open] = useState(false);
-  const Option = Select.Option;
-  const [page, setPage] = useState(1);
-  const [paginationSize, setPaginationSize] = useState(10)
-  const [value, setValue] = useState('');
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        // Assuming the first sheet is the one you want to read
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+
+        // Convert the sheet data to an array of objects
+        const formattedData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        // Assuming the first row contains headers
+        const [headers, ...rows] = formattedData;
+        console.log('Headers:', headers);
+
+        // Create table data
+        const tableData = rows.map((row, index) => ({
+          key: index,
+          ...row.reduce((acc, value, colIndex) => {
+            acc[headers[colIndex]] = value;
+            return acc;
+          }, {}),
+        }));
+
+        setTableDataExcel(tableData);
+
+        // Create columns based on headers
+        const tableColumns = headers.map((header) => ({
+          title: header,
+          dataIndex: header,
+          key: header,
+        }));
+
+        setColumnsExcel(tableColumns);
+
+      } catch (error) {
+        console.error('Error reading Excel file:', error);
+        // Handle the error as needed
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
 
   const columns: ColumnsType<DataType> = [
     {
@@ -85,12 +196,12 @@ const ListTeacher = () => {
       title: 'Tên hiển thị',
       dataIndex: 'fullname',
       render: (text: string) => <a>{text}</a>,
-      key:'fullname'
+      key: 'fullname'
     },
     {
       title: 'Mã số giảng viên',
       dataIndex: 'number',
-      key:'number'
+      key: 'number'
     },
     {
       title: 'Cấp bậc',
@@ -112,14 +223,118 @@ const ListTeacher = () => {
       title: 'Tác vụ',
       fixed: 'right',
       width: 100,
-      render: () => (<div className='action-button' size="middle">
-        <Button className='button-view' shape="circle" icon={<EyeOutlined />}> </Button>
-        <Button className='button-fix' shape="circle" icon={<FormOutlined />}> </Button>
-        <Button className='button-delete' shape="circle" icon={<DeleteOutlined />}> </Button>
+      render: (_, record) => (<div className='action-button' size="middle">
+        <Button className='button-view' onClick={() => handleView(record)} shape="circle" icon={<EyeOutlined />}> </Button>
+        <Button className='button-fix' onClick={() => handleUpdate(record)} shape="circle" icon={<FormOutlined />}> </Button>
+        <Button className='button-delete' onClick={() => showDeleteConfirm(record)} shape="circle" icon={<DeleteOutlined />}> </Button>
       </div>
       ),
     },
   ];
+
+  const handleView = async (record) => {
+    try {
+      const userData = await getUserById(record.id);
+      setId(record.id)
+      setDataTeacher(userData);
+      setModalView(true);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  }
+
+  const handleUpdate = async (record) => {
+    try {
+      const userData = await getUserById(record.id);
+      setId(record.id)
+      setDataTeacher(userData);
+      setModalUpdate(true);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  }
+
+  const handleDelete = async (id) => {
+    try {
+      console.log(id)
+      deleteUserById(id)
+
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  }
+  const showDeleteConfirm = async (record) => {
+    const userData = await getUserById(record.id);
+    setId(record.id);
+    confirm({
+      title: 'Bạn có muốn xóa người dùng này?',
+      icon: <ExclamationCircleFilled />,
+      content: '',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        console.log('OK');
+        handleDelete(id)
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (dataTeacher) {
+      detail.setFieldsValue(dataTeacher);
+      update.setFieldsValue(dataTeacher);
+      const researchAreaNames = dataTeacher.research_area.map(area => area.name);
+      detail.setFieldsValue({ research_area: researchAreaNames });
+      update.setFieldsValue({ research_area: researchAreaNames });
+    }
+  }, [dataTeacher, detail]);
+
+  const handleOk = async () => {
+    try {
+      // Kiểm tra và lấy giá trị từ form
+      const values = await update.validateFields();
+      console.log(values)
+      // Gọi hàm cập nhật
+      //await updateUserById(id, values);
+      // Đóng modal sau khi cập nhật thành công
+      setModalUpdate(false);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      // Xử lý lỗi nếu cần
+    }
+  };
+
+  const handleCreate = async () => {
+    try {
+      // Kiểm tra và lấy giá trị từ form
+      const formValues = await create.validateFields();
+
+      // Tạo một đối tượng mới với các trường bổ sung
+      const additionalFields = {
+        roles: ['T'],
+        position: "TEACHER",
+        is_active: true,
+        password: "1",
+      };
+
+      // Kết hợp formValues và additionalFields
+      const values = { ...formValues, ...additionalFields };
+
+      console.log(values);
+      // Gọi hàm cập nhật
+      //await createTeacher(values);
+      create.resetFields()
+      // Đóng modal sau khi cập nhật thành công
+      setModalUpdate(false);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      // Xử lý lỗi nếu cần
+    }
+  };
 
 
   return (
@@ -140,45 +355,28 @@ const ListTeacher = () => {
           onCancel={() => setModal1Open(false)}
         >
           <Form
-
             layout="vertical"
-
           >
-
             <Form.Item label="Họ và tên">
               <Input />
             </Form.Item>
             <Form.Item label="CCCD">
               <Input />
             </Form.Item>
-            <Form.Item label="Mã số sinh viên">
+            <Form.Item label="Mã số giảng viên">
               <Input />
             </Form.Item>
-            <Form.Item label="Khóa">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Kỳ học">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Lớp">
+            <Form.Item label="Email">
               <Input />
             </Form.Item>
             <Form.Item label="Trường/Viện:">
-              <Select>
-                <Select.Option value="demo">Trường Công nghệ Thông tin và Truyền thông</Select.Option>
-                <Select.Option value="demo">Trường Điện - Điện tử</Select.Option>
-                <Select.Option value="demo">Trường Hoá và Khoa học sự sống</Select.Option>
-                <Select.Option value="demo">Trường Vật liệu</Select.Option>
-                <Select.Option value="demo">Viện Toán ứng dụng và Tin học</Select.Option>
-                <Select.Option value="demo">Viện Vật lý Kỹ thuật</Select.Option>
-                <Select.Option value="demo">Viện Kinh tế và Quản lý</Select.Option>
-                <Select.Option value="demo">Viện Ngoại ngữ</Select.Option>
-                <Select.Option value="demo">Viện Sư phạm Kỹ thuật</Select.Option>
+              <Select options={optionSchool}>
+
               </Select>
             </Form.Item>
             <Form.Item label="Lĩnh vực nghiên cứu">
-              <Select>
-                <Select.Option value="demo">Demo</Select.Option>
+              <Select mode='multiple' options={dataSelect}>
+
               </Select>
             </Form.Item>
 
@@ -192,11 +390,45 @@ const ListTeacher = () => {
           title="Thêm mới sinh viên"
           centered
           open={modal2Open}
-          okText="Thêm"
           cancelText="Từ chối"
-          onOk={() => setModal2Open(false)}
           onCancel={() => setModal2Open(false)}
-        ></Modal>
+          onOk={() => {
+            handleFileUpload(droppedFile)
+            setModalExcel(true)
+          }}
+        >
+          <Dragger {...props}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">Click or drag file to this area to upload</p>
+            <p className="ant-upload-hint">
+              Support for a single or bulk upload. Strictly prohibited from uploading company data or other
+              banned files.
+            </p>
+          </Dragger>
+        </Modal>
+
+        <Modal
+          width="2000px"
+          centered
+          open={modalExcel}
+          cancelText="Từ chối"
+          onCancel={() => setModalExcel(false)}
+          onOk={() => setModalExcel(false)}
+        >
+          <Table className='table-list-student-excel'
+            pagination={{
+              onChange(current, pageSize) {
+                setPage(current);
+                setPaginationSize(pageSize)
+              },
+              defaultPageSize: 10, hideOnSinglePage: true, showSizeChanger: true
+            }}
+            columns={columnsExcel}
+            dataSource={tableDataExcel}
+          />
+        </Modal>
 
         <Search
           className='input-search'
@@ -234,6 +466,78 @@ const ListTeacher = () => {
           dataSource={dataTable}
         />
       </div>
+
+      <Modal
+        title="Chi tiết"
+        centered
+        open={modalView}
+        okText="OK"
+        onOk={() => setModalView(false)}
+        onCancel={() => setModalView(false)}
+        cancelButtonProps={{ style: { display: 'none' } }}
+      >
+        <Form layout="vertical"
+          form={detail}>
+          <Form.Item label="Họ và tên" name="fullname" fieldId='fullname'>
+            <Input readOnly />
+          </Form.Item>
+          <Form.Item label="CCCD" name="CCCD">
+            <Input readOnly />
+          </Form.Item>
+          <Form.Item label="Mã số giảng viên" name="number">
+            <Input readOnly />
+          </Form.Item>
+          <Form.Item label="Email" name="email">
+            <Input readOnly />
+          </Form.Item>
+          <Form.Item label="Trường/Viện:" name="school">
+            <Select disabled='true'>
+            </Select>
+          </Form.Item>
+          <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area">
+            <Select mode='multiple' disabled='true'>
+
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="Chi tiết"
+        centered
+        open={modalUpdate}
+        okText="OK"
+
+        onOk={handleOk}
+        onCancel={() => setModalUpdate(false)}
+        cancelText="Cancle"
+      >
+        <Form layout="vertical"
+          form={update}>
+          <Form.Item label="Họ và tên" name="fullname" fieldId='fullname'>
+            <Input />
+          </Form.Item>
+          <Form.Item label="CCCD" name="CCCD">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Mã số giảng viên" name="number">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Email" name="email">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Trường/Viện:" name="school">
+            <Select options={optionSchool} >
+            </Select>
+          </Form.Item>
+          <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area">
+            <Select mode='multiple' options={dataSelect}>
+
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+
     </div >
   )
 }

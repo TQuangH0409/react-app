@@ -8,4 +8,12 @@ const apiInstance = axios.create({
     return apiInstance.get(url, config);
   };
 
-  export default getData
+  const putData = (url, config) => {
+    return apiInstance.put(url, config)
+  }
+
+  const postData = (url, config) => {
+    return apiInstance.post(url, config)
+  }
+
+  export {getData, putData, postData}
