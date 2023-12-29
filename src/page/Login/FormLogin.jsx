@@ -1,14 +1,34 @@
+import { useState } from "react";
+import axiosData from "../../apis/axiosData";
 import Input from "../../components/Input/input";
 import "./FormLogin.css";
+import { login } from "../../apis/apiLogin";
+import { useNavigate } from "react-router-dom";
 function FormLogin({ errorLogin = false }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
   return (
-    <div>
+    <div className="container-custom">
       <div className="v-formLogin-container">
         <div className="v-formLogin-inner">
           <h1>Đăng nhập</h1>
-          <Input label={"Email"} placeholder={"Example@gmail.com"} />
+          <Input
+            label={"Email"}
+            placeholder={"Example@gmail.com, Example@sis.hust.edu.vn"}
+            onChange={(e) => {
+              setEmail(e.target.value);
+            }}
+          />
 
-          <Input label={"Mật khẩu"} placeholder={"Nhập mật khẩu"} />
+          <Input
+            label={"Mật khẩu"}
+            placeholder={"Nhập mật khẩu"}
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+          />
 
           {errorLogin && (
             <div>
@@ -32,7 +52,15 @@ function FormLogin({ errorLogin = false }) {
             <a href="">Quên mật khẩu?</a>
           </div>
 
-          <button className="v-formLogin-button">Đăng nhập</button>
+          <button
+            className="v-formLogin-button"
+            onClick={() => {
+              login(email, password);
+              navigate("/student");
+            }}
+          >
+            Đăng nhập
+          </button>
         </div>
       </div>
     </div>

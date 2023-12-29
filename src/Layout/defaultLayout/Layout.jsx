@@ -1,7 +1,7 @@
 import React from 'react'
 import './layout.css'
 import Sidebar from '../../components/sidebar/sidebar'
-import Navbar from '../../components/header/Navbar'
+import Navbar from '../../components/navbar/navbar'
 
 const Layout = ({children}) => {
   return (

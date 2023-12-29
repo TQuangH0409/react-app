@@ -1,25 +1,27 @@
-import React, { useState } from 'react'
-import "./sidebar.css"
-import { Menu } from 'antd'
-import { BrowserRouter as Router,  Routes,  Route, Link } from "react-router-dom";
+import React, { useState } from "react";
+import "./sidebar.css";
+import { Menu } from "antd";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
 const SubMenu = Menu.SubMenu;
 const Sidebar = ({ user }) => {
+  return (
+    <div className="sidebar">
+      <Link to="/admin" className="sidebar-logo " href="#">
+        <div className="sidebar-brand-icon align-items-center justify-content-center">
+          <img
+            className="sidebar-img"
+            src="../img/logo-dai-hoc-bach-khoa.png"
+          />
+        </div>
+      </Link>
 
-    return (
-        <div className='sidebar'>
-            <Link to="/admin" className='sidebar-logo ' href='#'>
-                <div className="sidebar-brand-icon align-items-center justify-content-center">
-                    <img className='sidebar-img' src="../img/logo-dai-hoc-bach-khoa.png" />
-                </div>
+      <hr className="sidebar-divider my-0"></hr>
 
-            </Link>
-
-            <hr className="sidebar-divider my-0"></hr>
-
-            <div >
-                {/*admin */}
-                {{/*user.isAdmin*/} && <Menu mode='inline'>
+      <div>
+        {/*admin */}
+        {/* user.isAdmin && */}
+         <Menu mode='inline'>
                     <Menu.Item key="list-student">
                         Danh sách sinh viên
                         <Link to="/admin/list-student"></Link>
@@ -50,27 +52,26 @@ const Sidebar = ({ user }) => {
                     </Menu.Item>
                     <hr className="sidebar-divider my-0"></hr>
                     </Menu>
-                }
 
-                {/*student */}
-                 {/* {user.isStudent} && <Menu>
+        {/*student */}
+        {
+          /* {user.isStudent} &&*/ <Menu>
+            <Menu.Item key="student-information">
+              Thông tin cá nhân
+              <Link to="/student"></Link>
+            </Menu.Item>
+            <hr className="sidebar-divider my-0" key={Math.random()}></hr>
 
-                    <Menu.Item key="student-information">
-                        Thông tin cá nhân
-                        <Link to="/student/infi"></Link>
-                    </Menu.Item>
-                    <hr className="sidebar-divider my-0"></hr>
+            <Menu.Item key="project-iformation">
+              Thông tin đồ án
+              <Link to="/project"></Link>
+            </Menu.Item>
+            <hr className="sidebar-divider my-0" key={Math.random()}></hr>
+          </Menu>
+        }
+        {/*teacher */}
 
-                    <Menu.Item key="project-iformation">
-                        Thông tin đồ án
-                        <Link to="/"></Link>
-                    </Menu.Item>
-                    <hr className="sidebar-divider my-0"></hr>
-
-                </Menu>  */}
-                {/*teacher */}
-
-                {/* {user.isTeacher} && <Menu>
+        {/* {user.isTeacher} && <Menu>
                     <Menu.Item key="student-information">
                         Thông tin cá nhân
                         <Link to="/"></Link>
@@ -84,9 +85,9 @@ const Sidebar = ({ user }) => {
                     <hr className="sidebar-divider my-0"></hr>
                     
                 </Menu>*/}
-            </div>
-        </div>
-    )
-}
+      </div>
+    </div>
+  );
+};
 
-export default Sidebar
+export default Sidebar;
