@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import * as XLSX from 'xlsx';
-import { getAllUserByPosition, getAllResearchArea, getUserById, optionYear, optionSchool, updateUserById, createUser } from "../../../api/apiAdmin"
+import { getAllUserByPosition, getAllResearchArea, getUserById, optionYear, optionSchool, updateUserById, createUser } from "../../../apis/apiAdmin"
 import {
   Button, Modal, Cascader,
   DatePicker,

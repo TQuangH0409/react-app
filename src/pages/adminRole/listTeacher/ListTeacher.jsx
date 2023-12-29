@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import * as XLSX from 'xlsx';
-import { getAllUserByPosition, getAllResearchArea, getUserById, optionYear, optionSchool, updateUserById, createUser, deleteUserById } from "../../../api/apiAdmin"
+import { getAllUserByPosition, getAllResearchArea, getUserById, optionYear, optionSchool, updateUserById, createUser, deleteUserById } from "../../../apis/apiAdmin"
 import {
   Button, Modal, Cascader,
   DatePicker,
@@ -23,7 +23,6 @@ import {
   DeleteOutlined, FormOutlined, EyeOutlined,
   InboxOutlined, ExclamationCircleFilled
 } from '@ant-design/icons';
-import type { ColumnsType, TablePaginationConfi } from 'antd/es/table';
 const { confirm } = Modal;
 
 const { Search } = Input;
@@ -295,11 +294,12 @@ const ListTeacher = () => {
 
   const handleOk = async () => {
     try {
+      
       // Kiểm tra và lấy giá trị từ form
-      const values = await update.validateFields();
-      console.log(values)
+      const body = await update.validateFields();
+      console.log(body)
       // Gọi hàm cập nhật
-      //await updateUserById(id, values);
+      await updateUserById(id, body);
       // Đóng modal sau khi cập nhật thành công
       setModalUpdate(false);
     } catch (error) {
@@ -356,6 +356,7 @@ const ListTeacher = () => {
         >
           <Form
             layout="vertical"
+            form={create}
           >
             <Form.Item label="Họ và tên">
               <Input />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getAllResearchArea } from "../../../api/apiAdmin"
+import { getAllResearchArea } from "../../../apis/apiAdmin"
 import axios from 'axios';
 import {
   Button, Modal, Cascader,

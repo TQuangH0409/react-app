@@ -1,6 +1,6 @@
 import "./input.css"
 
-function Input ({label , placeholder, onChange, icon, errorLogin = false}) {
+function Input ({label , placeholder, icon,onChange, errorLogin = false}) {
     return (
         <div className="v-input-container">
             <span className="v-label">{label}</span>

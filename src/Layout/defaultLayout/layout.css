@@ -1,6 +1,7 @@
-.layout{
-    display: flex;
-    background-color: #f8f9fc;
+.layout {
+  display: flex;
+  background-color: #f8f9fc;
+  width: 100%;
 }
 
 .content{

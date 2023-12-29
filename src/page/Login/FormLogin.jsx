@@ -2,7 +2,9 @@ import { useState } from "react";
 import Input from "../../components/Input/input";
 import "./FormLogin.css";
 import axios from "axios"
+import { useNavigate } from "react-router-dom";
 function FormLogin({ errorLogin = false }) {
+  const navigate = useNavigate()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const login = async () => {
@@ -10,7 +12,7 @@ function FormLogin({ errorLogin = false }) {
   }
 
   return (
-    <div>
+    <div className="container-custom">
       <div className="v-formLogin-container">
         <div className="v-formLogin-inner">
           <h1>Đăng nhập</h1>
@@ -19,7 +21,7 @@ function FormLogin({ errorLogin = false }) {
           }}/>
 
           <Input label={"Mật khẩu"} placeholder={"Nhập mật khẩu"} onChange={(e) => {
-            setPassword(e.target.value)};
+            setPassword(e.target.value)}
           } />
 
           {errorLogin && (
@@ -44,7 +46,15 @@ function FormLogin({ errorLogin = false }) {
             <a href="">Quên mật khẩu?</a>
           </div>
 
-          <button className="v-formLogin-button">Đăng nhập</button>
+          <button
+            className="v-formLogin-button"
+            onClick={() => {
+              login(email, password);
+              navigate("/student");
+            }}
+          >
+            Đăng nhập
+          </button>
         </div>
       </div>
     </div>

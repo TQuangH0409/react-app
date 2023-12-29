@@ -1,21 +1,22 @@
-import {getData, putData, postData} from "./apiData";
+import { getData, putData, postData } from "../api/apiData";
+import axiosData from "./axiosData";
 
 const optionYear = [
   {
-    value:"20231",
-    label:"20231",
+    value: "20231",
+    label: "20231",
   },
   {
-    value:"20223",
-    label:"20223",
+    value: "20223",
+    label: "20223",
   },
   {
-    value:"20222",
-    label:"20222",
+    value: "20222",
+    label: "20222",
   },
   {
-    value:"20221",
-    label:"20221",
+    value: "20221",
+    label: "20221",
   },
 ];
 
@@ -61,29 +62,7 @@ const optionSchool = [
 
 const getUserById = async (id) => {
   try {
-    const token = localStorage.getItem("token");
-    const response = await getData(`/users/${id}`, {
-      headers: {
-        token: token
-      }
-    });
-
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error; // Re-throw the error to handle it where the function is called
-  }
-};
-
-const updateUserById = async (id, valueUser) => {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await putData(`/users/${id}`, {
-      headers: {
-        token: token
-      },
-      body: JSON.stringify(valueUser)
-    });
+    const response = await axiosData().get(`/users/${id}`);
     if (!response.ok) {
       // Xử lý lỗi nếu có
       const errorData = await response.json();
@@ -102,16 +81,32 @@ const updateUserById = async (id, valueUser) => {
   }
 };
 
-const deleteUserById = async (id) => {
+const updateUserById = async (id, body) => {
+  const res = await axiosData().put(`/users/${id}`, body)
+
   try {
-    const token = localStorage.getItem("token");
-    console.log(token)
-    const response = await putData(`/users/${id}`, {
-      headers: {
-        token: token
-      },
-      body: JSON.stringify({ is_active: false })
-    });
+    const response = await axiosData().put(`/users/${id}`, body)
+    if (!response.ok) {
+      // Xử lý lỗi nếu có
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Update user failed');
+    }
+
+    // Xử lý thành công nếu cần
+    const updatedUserData = await response.json();
+    console.log('User updated successfully:', updatedUserData);
+
+    // Trả về dữ liệu sau khi cập nhật (nếu cần)
+    return updatedUserData;
+  } catch (error) {
+    console.error(error);
+    throw error; // Re-throw the error to handle it where the function is called
+  }
+};
+
+const deleteUserById = async (id,body) => {
+  try {
+    const response = await axiosData().put(`/users/${id}`, body)
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Delete user failed');
@@ -123,20 +118,13 @@ const deleteUserById = async (id) => {
     return updatedUserData;
   } catch (error) {
     console.error(error);
-    throw error; 
+    throw error;
   }
 };
 
 const getAllUserByPosition = async (position) => {
   try {
-    const token = localStorage.getItem("token");
-    const response = await getData(`/users/position?position=${position}`, {
-      headers: {
-        token: token
-      }
-    });
-
-
+    const response = await axiosData().get(`/users/position?position=${position}`)
     return response.data;
   } catch (error) {
     console.error(error);
@@ -149,13 +137,8 @@ const getAllResearchArea = async () => {
   const allData = [];
   while (currentPage < 2) {
     try {
-
-      const token = localStorage.getItem("token");
-      const response = await getData(`/research-areas/?page=${currentPage}`, {
-        headers: {
-          token: token
-        }
-      });
+      const response = await axiosData().get(`/research-areas/?page=${currentPage}`)
+        
       if (Array.isArray(response.data.data)) {
         const activeResearchAreas = response.data.data.filter(item => item.is_active === true);
         allData.push(...activeResearchAreas);
@@ -171,13 +154,7 @@ const getAllResearchArea = async () => {
 
 const createUser = async (valueUser) => {
   try {
-    const token = localStorage.getItem("token");
-    const response = await postData(`/users/`, {
-      headers: {
-        token: token
-      },
-      body: JSON.stringify(valueUser)
-    });
+    const response = await axiosData().post(`/users`)
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'create user failed');
@@ -188,8 +165,8 @@ const createUser = async (valueUser) => {
     return userData;
   } catch (error) {
     console.error(error);
-    throw error; 
+    throw error;
   }
 };
 
-export { getAllUserByPosition, getUserById, getAllResearchArea, optionYear, optionSchool, updateUserById, createUser, deleteUserById}
+export { getAllUserByPosition, getUserById, getAllResearchArea, optionYear, optionSchool, updateUserById, createUser, deleteUserById }
