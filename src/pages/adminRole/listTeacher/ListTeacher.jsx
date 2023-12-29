@@ -443,7 +443,7 @@ const ListTeacher = () => {
             );
             setData(filteredData);
           }}
-          placeholder="Tìm kiếm"
+          placeholder ="Tìm kiếm"
           onSearch={onSearch}
           style={{
             width: 500,
