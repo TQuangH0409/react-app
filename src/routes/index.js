@@ -9,12 +9,15 @@ import infoTeacher from "../pages/teacherRole/infoTeacher/infoTeacher";
 import listProject from "../pages/teacherRole/listProject/listProject";
 import infoProject from "../pages/teacherRole/infoProject/infoProject";
 import listReviewProject from "../pages/teacherRole/listReviewProject/listReviewProject";
-import listAssignment from "../pages/teacherRole/listAssignment/listAssignment";
 import FormLogin from "../logInPage/Login/FormLogin";
 import InfoStudentProject from "../pages/studentRole/infoStudentProject";
 import InfoStudent from "../pages/studentRole/infoStudent";
+import UpdatePassword from "../logInPage/UpdatePassword/UpdatePassword";
+import ForgetPassword from "../logInPage/ForgetPassword/ForgetPassword";
 
 const Login = { path: "/login", component: FormLogin };
+const updatePassword = { path: "/updatePassword", component: UpdatePassword };
+const forgetPassword = { path: "/forgetPassword", component: ForgetPassword };
 
 const PublicRoutes = [
   { path: "/admin", component: ListStudent },
@@ -32,7 +35,6 @@ const PublicRoutes = [
   { path: "/teacher/list-project", component: listProject },
   { path: "/teacher/info-project/:id", component: infoProject },
   { path: "/teacher/list-review-project", component: listReviewProject },
-  { path: "/teacher/list-assignment", component: listAssignment },
 ];
 
-export { PublicRoutes, Login };
+export { PublicRoutes, Login, updatePassword, forgetPassword };

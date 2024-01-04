@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Input from "../../components/Input/input";
 import "./FormLogin.css";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "../../apis/apiLogin";
+import { Checkbox } from "antd";
 
 function FormLogin({ errorLogin = false }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [falseLogin, setFalseLogin] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
   const navigate = useNavigate();
 
   const handleEmailChange = (event) => {
@@ -18,41 +22,63 @@ function FormLogin({ errorLogin = false }) {
     setPassword(event.target.value);
   };
 
-  const handleSubmit = async (event) => {
-    try {
-      event.preventDefault();
-      const res = await axios.post(
-        `http://35.213.168.72:8000/api/v1/auth/login`,
-        {
-          email: email,
-          password: password,
-        }
-      );
-      if (res) {
-        const token = res.data.accessToken;
-        localStorage.setItem("token", token);
-        navigate('/info-teacher');
-      }
-      // Here, you can handle the form submission, e.g., call an authentication API
-      // console.log({
-      //   email,
-      //   password,
-      // });
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("rememberedEmail");
+    const rememberedPassword = localStorage.getItem("rememberedPassword");
 
+    if (rememberedEmail && rememberedPassword) {
+      setEmail(rememberedEmail);
+      setPassword(rememberedPassword);
+      setRememberMe(true);
+    }
+  }, []);
+
+  const handleRememberMeChange = () => {
+    setRememberMe(!rememberMe);
+    console.log(rememberMe);
+  };
+
+  const handleSaveLogin = () => {
+    if (rememberMe) {
+      console.log(rememberMe + "123");
+
+      localStorage.setItem("rememberedEmail", email);
+      localStorage.setItem("rememberedPassword", password);
+    } else {
+      console.log(rememberMe + "456");
+      // Clear stored values if "Remember Me" is not checked
+      localStorage.removeItem("rememberedEmail");
+      localStorage.removeItem("rememberedPassword");
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await login(email, password);
+
+      // Save email and password to localStorage if "Remember Me" is checked
+      await handleSaveLogin();
+
+      if (localStorage.getItem("roles")[0] === "SA") {
+        navigate("/student");
+      } else if (localStorage.getItem("roles")[0] === "T") {
+        navigate("/info-teacher");
+      } else {
+        navigate("/info-teacher");
+      }
       // Reset the form fields after submission if needed
-      setEmail("");
-      setPassword("");
     } catch (error) {
-      setFalseLogin(true);
+      alert("Tài khoản hoặc mật khẩu bị sai");
     }
   };
 
   return (
-    <div>
+    <div className="login-container">
       <div className="v-formLogin-container">
         <div className="v-formLogin-inner">
           <h1>Đăng nhập</h1>
-          <form onSubmit={handleSubmit}>
+          <form>
             <div className="v-input-container">
               <span className="v-label">Email</span>
               <input
@@ -76,38 +102,21 @@ function FormLogin({ errorLogin = false }) {
               />
             </div>
 
-            {falseLogin && (
-              <div>
-                <span>Tài khoản hoặc mật khẩu bị sai</span>
-                <br />
-                <span>
-                  Vui lòng đăng nhập lại 30 phút sau hoặc liên hệ admin để được
-                  hỗ trợ
-                </span>
-              </div>
-            )}
-            {errorLogin && (
-              <div>
-                <span>
-                  Tài khoản của bạn bị khóa do đăng nhập sai 5 lần liên tiếp
-                </span>
-                <br />
-                <span>
-                  Vui lòng đăng nhập lại 30 phút sau hoặc liên hệ admin để được
-                  hỗ trợ
-                </span>
-              </div>
-            )}
-
+            <div style={{ marginTop: "20px" }}>
+              <Checkbox value={rememberMe} onChange={handleRememberMeChange}>
+                Ghi nhớ tài khoản mật khẩu
+              </Checkbox>
+            </div>
             <div className="v-formLogin-footer">
-              <div className="v-formLogin-footer-left">
-                <input type="checkbox" />
-                <span>Duy trì đăng nhập</span>
-              </div>
-              <a href="">Quên mật khẩu?</a>
+              <Link to="/updatePassword">Đổi mật khẩu?</Link>
+
+              <Link to="/forgetPassword">Quên mật khẩu?</Link>
             </div>
 
-            <button className="v-formLogin-button" type="submit">
+            <button
+              className="v-formLogin-button"
+              onClick={(e) => handleSubmit(e)}
+            >
               Đăng nhập
             </button>
           </form>

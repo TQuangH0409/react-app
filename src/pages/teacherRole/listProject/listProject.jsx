@@ -4,59 +4,63 @@ import { Button, Input, Table } from "antd";
 import "../../adminRole/globalCSS.css";
 import { EyeOutlined, FormOutlined } from "@ant-design/icons";
 
-import getData from "../api/apiData.js";
+// import getData from "../api/apiData.js";
 import axios from "axios";
+import { getAllProject } from "../../../apis/apiTeacher";
+import unorm from "unorm";
+import { Link } from "react-router-dom";
 const { Search } = Input;
-const onSearch = (value, _e, info) => console.log(info?.source, value);
+
 export const ListProject = () => {
   const [page, setPage] = useState(1);
   const [paginationSize, setPaginationSize] = useState(10);
 
+  const [dataAll, setDataAll] = useState({});
   const [dataTable, setDataTable] = useState([]);
-  const [dataFake, setDataFake] = useState(dataTable);
+  const [dataFake, setDataFake] = useState([]);
+  const [dataTeacher, setDataTeacher] = useState({});
 
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const login = async () => {
-    const res = await axios.post(
-      `http://35.213.168.72:8000/api/v1/auth/login`,
-      {
-        email: "quangh204299@gmail.com",
-        password: "1",
+  const onSearch = (currentValue) => {
+    if (typeof currentValue === "string") {
+      if (currentValue) {
+        let filteredData = dataFake.filter((entry) => {
+          return entry.fullname
+            .toLowerCase()
+            .includes(currentValue.toLowerCase());
+        });
+        console.log(filteredData);
+        setDataTable(filteredData);
+        // setDataTable(filteredData);
+      } else {
+        setDataTable(dataFake);
       }
-    );
-    if (res) {
-      const token = res.data.accessToken;
-      localStorage.setItem("token", token);
+    } else if (typeof currentValue === "number") {
+      console.log(123);
+
+      if (!isNaN(currentValue)) {
+        // Check if it's a valid number
+        const filteredData = dataFake.filter((entry) =>
+          entry.number.toString().includes(currentValue.toString())
+        );
+        setDataTable(filteredData);
+      } else {
+        console.log("Invalid number");
+        // Handle the case where currentValue is not a valid number
+      }
     }
   };
-  useEffect(() => {
-    login();
-  }, []);
-
-  const getAllProject = async (current) => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await getData(`/projects/?size=10&page=0`, {
-        headers: {
-          token: token,
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       setTimeout(async () => {
         try {
-          const data = await getAllProject();
-          setDataTable(data.data);
-          setDataFake(data.data)
+          const data = await getAllProject(localStorage.getItem("userId"));
+          setDataAll(data);
+          setDataTable(data.students);
+          setDataFake(data.students);
+          setDataTeacher(data.teacher);
           setLoading(false);
         } catch (error) {
           console.error("Error fetching student data:", error);
@@ -66,6 +70,19 @@ export const ListProject = () => {
     fetchData();
   }, []);
 
+  // useEffect(() => {
+  //   const formatDate = async (date) => {
+  //     let dateObj = new Date(date);
+
+  //     const year = dateObj.getFullYear();
+  //     const month = (dateObj.getMonth() + 1).toString().padStart(2, "0"); // Month is zero-based
+  //     const day = dateObj.getDate().toString().padStart(2, "0");
+
+  //     const formattedDate = `${day}-${month}-${year}`;
+  //     return formattedDate;
+  //   };
+  // }, []);
+
   const columns = [
     {
       title: "ID",
@@ -74,32 +91,40 @@ export const ListProject = () => {
     },
     {
       title: "Tên đề tài",
-      dataIndex: "name",
-    },
-    {
-      title: "Điểm",
-      dataIndex: "mark",
+      key: "index",
+      render: (text, record, index) =>
+        (text = record.project?.name ? record.project.name : ""),
     },
     {
       title: "Sinh viên",
-      sorter: true,
-      dataIndex: "student_name",
+      dataIndex: "fullname",
     },
     {
       title: "MSSV",
-      dataIndex: "student_id",
+      dataIndex: "number",
     },
     {
-      title: "Giảng viên phản biện",
-      dataIndex: "teacher_instruct_id",
+      title: "Giảng viên hướng dẫn",
+      key: "index",
+
+      render: (text, record, index) => {
+        return (text = "Nguyễn Trường Việt");
+        return (text = dataTeacher.fullname);
+      },
     },
     {
       title: "Ngày tạo",
-      dataIndex: "created_time",
-    },
-    {
-      title: "Người tạo",
-      dataIndex: "created_by",
+      render: (text, record, index) => {
+        let dateObj = new Date(dataAll.created_time);
+
+        const year = dateObj.getFullYear();
+        const month = (dateObj.getMonth() + 1).toString().padStart(2, "0"); // Month is zero-based
+        const day = dateObj.getDate().toString().padStart(2, "0");
+
+        const formattedDate = `${day}-${month}-${year}`;
+
+        return (text = formattedDate);
+      },
     },
     {
       title: "Tác vụ",
@@ -107,14 +132,13 @@ export const ListProject = () => {
       width: 100,
       render: (text, record) => (
         <div className="action-button" size="middle">
-          <Button
-            href={`/teacher/info-project/${record.student_id}`}
-            className="button-view"
-            shape="circle"
-            icon={<EyeOutlined />}
-          >
-            {" "}
-          </Button>
+          <Link to={`/teacher/info-project/${record.id}`}>
+            <Button
+              className="button-view"
+              shape="circle"
+              icon={<EyeOutlined />}
+            >{""}</Button>
+          </Link>
         </div>
       ),
     },
@@ -123,20 +147,23 @@ export const ListProject = () => {
   return (
     <div className="list-student mb-4">
       <div className="content-header py-3">
-        <h6 className="m-0 font-weight-bold text-primary">Danh sách đồ án</h6>
+        <h6 className="m-0 font-weight-bold text-primary">
+          Danh sách sinh viên được phân công hướng dẫn
+        </h6>
         <Search
-        placeholder="Tên đề tài..."
+          placeholder="Tên sinh viên..."
           className="input-search"
           value={value}
           onChange={(e) => {
             const currentValue = e.target.value;
-            setValue(currentValue);
-            let filteredData = dataFake.filter((entry) =>
-              entry.name.toLowerCase().includes(currentValue.toLowerCase())
-            );
-            setDataTable(filteredData);
+            setValue(e.target.value);
+            if (!currentValue) {
+              setDataTable(dataFake);
+            }
           }}
-          onSearch={onSearch}
+          onSearch={(value) => {
+            onSearch(value);
+          }}
           style={{
             width: 500,
             paddingLeft: 10,
