@@ -1,3 +1,9 @@
+.login-container{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 .v-formLogin-container {
   background-color: #fff;
   width: 598px;
@@ -11,7 +17,10 @@ h1 {
   font-size: 45px;
 }
 .v-formLogin-inner {
-  margin: 80px 72px 152px;
+  margin: 80px 72px 0 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .v-formLogin-footer {
   display: flex;
@@ -35,9 +44,16 @@ h1 {
 .v-formLogin-button {
   height: 55px;
   width: 100%;
-  background-color: #c18ff5;
+  background-color: #9a48ef;
   color: #fff;
   border-radius: 10px;
+}
+
+.v-formLogin-button:hover {
+  background-color: #b27cea;
+}
+.v-formLogin-button:active {
+  background-color: #8521ed;
 }
 .container-custom {
   display: flex;

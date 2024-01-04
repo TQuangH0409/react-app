@@ -1,96 +1,110 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import "./infoTeacher.css";
 import { FormOutlined } from "@ant-design/icons";
-import { Button, Form, Image, Input, Modal, Select } from "antd";
-
+import { Button, Form, Image, Input, InputNumber, Modal, Select } from "antd";
+import { getTeacherById, putInfoTeacher } from "../../../apis/apiTeacher";
 export default function InfoTeacher() {
-  const [option, setOption] = "";
-  var teacher = {
-    avatarUrl: "./avatar.jpg",
-    name: "Nguyễn Cẩm Tú",
-    teacherId: "NVC22091998",
-    email: "vietnguyen0305@gmail.com",
-    rank: "64",
-    school_institute: "CNTT&TT",
-    research_area: [
-      {
-        name: "Xử lý ngôn ngữ tự nhiên",
-        experience: 3,
-      },
-      {
-        name: "Xử lý ngôn ngữ tự nhiên",
-        experience: 3,
-      },
-    ],
-  };
-  const options1 = [
-    {
-      value: "Công nghệ thông tin",
-      label: "Trường CNTT&TT",
-      index: 0,
-    },
-    {
-      value: "Điện tử",
-      label: "Trường Điện tử",
-      index: 1,
-    },
-    {
-      value: "Cơ khí",
-      label: "Trường Cơ khí",
-      index: 2,
-    },
-  ];
-  const options2 = [
-    {
-      value: "CNTT&TT",
-      label: "Xử lý ngôn ngữ tự nhiên",
-    },
-    {
-      value: "dt",
-      label: "Machine Learning",
-    },
-    {
-      value: "ck",
-      label: "An ninh mạng",
-    },
-  ];
-
-  const handleOption = () => {
-    return [
-      {
-        value: "CNTT&TT",
-        label: "Xử lý ngôn ngữ tự nhiên",
-      },
-      {
-        value: "dt",
-        label: "Machine Learning",
-      },
-      {
-        value: "ck",
-        label: "An ninh mạng",
-      },
-    ];
-  };
-
-  const [selectedSchool, setSelectedSchool] = useState("");
-  const [researchFieldOptions, setResearchFieldOptions] = useState([]);
+  const [teacherInfo, setTeacherInfo] = useState({});
+  const [teacherName, setTeacherName] = useState("");
+  const [teacherId, setTeacherId] = useState("");
+  const [teacherEmail, setTeacherEmail] = useState("");
+  const [teacherRank, setTeacherRank] = useState("");
+  const [teacherSchool, setTeacherSchool] = useState("Trường CNTT&TT");
+  const [researchArea, setResearchArea] = useState([]);
 
   const handleSchoolChange = (value) => {
-    setSelectedSchool(value);
-
     const updatedOptions = fetchResearchFieldOptions(value);
-
-    setResearchFieldOptions(updatedOptions);
+    setResearchArea(updatedOptions);
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getTeacherById();
+        setTeacherInfo(data);
+        setTeacherName(data.fullname);
+        setTeacherId(data.number);
+        setTeacherEmail(data.email);
+        setTeacherRank("Tiến sĩ");
+      } catch (error) {
+        console.error("Error fetching student data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const fetchResearchFieldOptions = (school) => {
     if (school === "School1") {
-      return ["Field1", "Field2", "Field3"];
+      return [
+        "Khoa học máy tính",
+        "Truyền thông dữ liệu và mạng máy tính​",
+        "Công nghệ phần mềm​",
+        "Kỹ thuật máy tính",
+        "Kỹ thuật mạng",
+        "Hệ thống quản lý thông tin",
+        "Robot và Trí tuệ nhân tạo",
+      ];
     } else if (school === "School2") {
-      return ["Field4", "Field5", "Field6"];
+      return [
+        "Kỹ thuật Điện – Điện tử",
+        "Kỹ thuật Điều khiển và Tự động hoá",
+        "Kỹ thuật Điện Tử – Viễn thông",
+      ];
+    } else if (school === "School3") {
+      return [
+        "Động học",
+        "Tĩnh học",
+        "Sức bền vật liệu, truyền nhiệt",
+        "Động lực dòng chảy",
+        "Cơ học vật rắn",
+        "Điều khiển học",
+        "Khí động học",
+        "Thủy lực",
+        "Chuyển động học và các ứng dụng nhiệt động lực học",
+      ];
+    } else if (school === "School4") {
+      return [
+        "Hóa học",
+        "Kỹ thuật hóa học",
+        "Kỹ thuật hóa dược",
+        "Kỹ thuật sinh học",
+        "Kỹ thuật thực phẩm",
+        "Kỹ thuật môi trường",
+        "Quản lý tài nguyên và môi trường",
+      ];
+    } else if (school === "School5") {
+      return [
+        "Cơ học biến dạng và Cán kim loại",
+        "Vật liệu và Công nghệ đúc",
+        "Luyện kim màu và Luyện kim bột",
+        "Vật liệu và Nhiệt luyện",
+        "Luyện kim đen",
+        "Vật liệu Polyme",
+        "Vật liệu màng mỏng",
+      ];
     } else {
       return [];
+    }
+  };
+
+  const handleUpdateTeacher = async () => {
+    try {
+      // Assuming you have teacherId and teacherData state variables
+      const updatedTeacherData = await putInfoTeacher(teacherInfo.id, {
+        ...teacherInfo,
+        fullname: teacherName,
+        number: teacherId,
+        email: teacherEmail,
+        research_area: [...researchArea],
+      });
+      console.log("Teacher updated:", updatedTeacherData);
+
+      // Close the modal after successful update
+      setModal1Open(false);
+    } catch (error) {
+      console.error("Error updating teacher:", error);
+      // Handle the error (e.g., show an error message to the user)
     }
   };
 
@@ -114,96 +128,132 @@ export default function InfoTeacher() {
           open={modal1Open}
           okText="Lưu"
           cancelText="Hủy"
-          onOk={() => setModal1Open(false)}
+          onOk={handleUpdateTeacher}
           onCancel={() => setModal1Open(false)}
         >
           <Form layout="vertical">
             <Form.Item label="Họ và tên">
-              <Input />
+              <Input
+                onChange={(e) => setTeacherName(e.target.value)}
+                value={teacherName}
+              />
             </Form.Item>
-            <Form.Item label="CCCD">
-              <Input />
+            <Form.Item label="Mã số giảng viên">
+              <Input
+                onChange={(e) => setTeacherId(e.target.value)}
+                value={teacherId}
+              />
             </Form.Item>
             <Form.Item label="Email">
-              <Input />
+              <Input
+                onChange={(e) => setTeacherEmail(e.target.value)}
+                value={teacherEmail}
+              />
             </Form.Item>
             <Form.Item label="Cấp bậc">
-              <Input />
+              <Input
+                onChange={(e) => setTeacherRank(e.target.value)}
+                value={teacherRank}
+              />
             </Form.Item>
 
             <Form.Item label="Trường/Viện">
               <Select
-                defaultValue=""
+                value={teacherSchool}
                 style={{ width: "100%" }}
                 onChange={handleSchoolChange}
               >
                 {/* Replace with your actual options for schools */}
-                <Select.Option value="School1">School1</Select.Option>
-                <Select.Option value="School2">School2</Select.Option>
+                <Select.Option value="School1">Trường CNTT&TT</Select.Option>
+                <Select.Option value="School2">
+                  Trường Điện - điện tử
+                </Select.Option>
+                <Select.Option value="School3">Trường Cơ khí</Select.Option>
+                <Select.Option value="School4">
+                  Trường Hóa và Khoa học sự sống
+                </Select.Option>
+                <Select.Option value="School5">Trường Vật liệu</Select.Option>
               </Select>
             </Form.Item>
 
             <Form.Item label="Lĩnh vực nghiên cứu">
               <Select
-                defaultValue=""
+                mode="multiple"
+                value={teacherInfo.research_area?.map(item => item.name)}
                 style={{ width: "100%" }}
-                options={researchFieldOptions.map((field) => ({
+                options={researchArea.map((field) => ({
                   value: field,
                   label: field,
                 }))}
               />
             </Form.Item>
+            <Form.Item label="Năm kinh nghiệm">
+              <InputNumber
+                min={1}
+                max={20}
+                defaultValue={1}
+                onChange={console.log(123)}
+              />
+            </Form.Item>
           </Form>
         </Modal>
       </div>
+
       <div className="body">
         <div className="body_avatar">
           <Image
             width={"100%"}
-            height={300}
+            height={"100%"}
             src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"
           />
         </div>
-        <div className="body_content">
-          <div className="body_content_left">
-            <div className="body_content_left--inner">
-              <strong>Họ và tên: </strong>
-              <p className="body_content_left--inner--name">{teacher.name}</p>
+        {
+          <div className="body_content">
+            <div className="body_content_left">
+              <div className="body_content_left--inner">
+                <strong>Họ và tên: </strong>
+                <p className="body_content_left--inner--name">
+                  {teacherInfo.fullname}
+                </p>
+              </div>
+              <div className="body_content_left--inner">
+                <strong>Mã số giảng viên: </strong>
+                <p>{teacherInfo.number}</p>
+              </div>
+              <div className="body_content_left--inner">
+                <strong>Email: </strong>
+                <p className="body_content_left--inner--name">
+                  {teacherInfo.email}
+                </p>
+              </div>
             </div>
-            <div className="body_content_left--inner">
-              <strong>Mã số giảng viên: </strong>
-              <p>{teacher.teacherId}</p>
-            </div>
-            <div className="body_content_left--inner">
-              <strong>Email: </strong>
-              <p className="body_content_left--inner--name">{teacher.email}</p>
-            </div>
-          </div>
 
-          <div className="body_content_right">
-            <div className="body_content_right--inner">
-              <strong>Cấp bậc: </strong>
-              <p>{teacher.rank}</p>
-            </div>
-            <div className="body_content_right--inner">
-              <strong>Trường/Viện: </strong>
-              <p>{teacher.school_institute}</p>
-            </div>
-            <div className="body_content_right--inner">
-              <strong>Lĩnh vực nghiên cứu: </strong>
-              <div>
-                {teacher.research_area.map((item) => {
-                  return (
-                    <div className="research_area">
-                      <p>{item.name}</p>
-                      <p>{item.experience}</p>
-                    </div>
-                  );
-                })}
+            <div className="body_content_right">
+              <div className="body_content_right--inner">
+                <strong>Cấp bậc: </strong>
+                {/* <p>{teacherInfo?.degree}</p> */}
+                <p>Tiến sĩ</p>
+              </div>
+              <div className="body_content_right--inner">
+                <strong>Trường/Viện: </strong>
+                <p>CNTT&TT</p>
+              </div>
+              <div className="body_content_right--inner">
+                <strong>Lĩnh vực nghiên cứu: </strong>
+                <div>
+                  {teacherInfo.research_area?.map((item) => {
+                    return (
+                      <div className="research_area">
+                        <p>{item.name}</p>
+                        <p>{item.experience} năm</p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        }
       </div>
     </div>
   );
