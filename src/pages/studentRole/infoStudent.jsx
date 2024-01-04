@@ -4,48 +4,70 @@ import "./infoStudent.css";
 import { getUserById } from "../../apis/apiStudent";
 import { getAss } from "../../apis/apiAss";
 import { getProjectById, getProjectByStudent } from "../../apis/apiProject";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   SetStudent,
+  setCheck,
   setInfoInstruct,
   setInfoProject,
   setInfoStudent,
 } from "../../hook/slice";
+import { EditOutlined } from "@ant-design/icons";
+import UpdateStudent from "./updateStudent";
 
 const InfoStudent = () => {
   const [student, setStudent] = useState({});
   const [instruct, setInstruct] = useState(undefined);
   const [review, setReview] = useState(undefined);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchData = async () => {
-      const s = await getUserById();
-      setStudent(s);
-      const ass = await getAss({
-        student: localStorage.getItem("userId"),
-        type: "INSTRUCT",
-      });
-      const instruct = await getUserById(ass?.teacher);
-      setInstruct(instruct);
+      try {
+        const s = await getUserById();
+        setStudent(s);
+        const ass = await getAss({
+          student: localStorage.getItem("userId"),
+          type: "INSTRUCT",
+        });
+        const instruct = await getUserById(ass?.teacher.id);
+        setInstruct(instruct);
 
-      const project = await getProjectByStudent();
-      const projectDetail = await getProjectById(project.id);
-      dispatch(setInfoStudent(s));
-      dispatch(setInfoInstruct(instruct));
-      dispatch(setInfoProject(projectDetail));
+        const project = await getProjectByStudent();
+        const projectDetail = await getProjectById(project.id);
+        dispatch(setInfoStudent(s));
+        dispatch(setInfoInstruct(instruct));
+        // dispatch(setInfoProject(projectDetail));
+        dispatch(setCheck(1));
+      } catch (error) {
+        console.log("🚀 ~ file: updateStudent.jsx:18 ", error);
+      }
     };
 
     fetchData();
   }, []);
-  console.log(instruct);
+  const studentT = useSelector((state) => {
+    console.log(
+      "🚀 ~ file: updateStudent.jsx:18 ~ UpdateStudent ~ student:",
+      state.store.student,
+      state.store.check
+    );
+    return state.store.student;
+  });
   return (
     <div>
       <Row>
         <Col className="info-student-title" span={24}>
           Thông tin sinh viên
+          <EditOutlined
+            onClick={() => {
+              setIsModalOpen(true);
+            }}
+          />
         </Col>
       </Row>
+      {isModalOpen && <UpdateStudent isModalOpen={isModalOpen} />}
       <Row>
         <Col span={12}>
           <Row>

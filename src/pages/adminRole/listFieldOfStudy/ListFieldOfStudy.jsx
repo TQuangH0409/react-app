@@ -19,7 +19,6 @@ import {
   FileAddOutlined,
   DeleteOutlined, FormOutlined, EyeOutlined
 } from '@ant-design/icons';
-import type { ColumnsType, TablePaginationConfi } from 'antd/es/table';
 
 const { Search } = Input;
 const onSearch = (value, _e, info) => console.log(info?.source, value);

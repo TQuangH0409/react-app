@@ -111,7 +111,6 @@ const ListTeacher = () => {
     accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     action: 'https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188',
     beforeUpload: file => {
-      console.log(file);
       if (droppedFile > 1) {
         message.warning(`Multiple files are not allowed. Only one CSV file will be uploaded at a time.`);
         return false;
@@ -125,7 +124,6 @@ const ListTeacher = () => {
     onChange(info) {
       const { status } = info.file;
       if (status !== 'uploading') {
-        console.log(info.file, info.fileList);
       }
       if (status === 'done') {
         message.success(`${info.file.name} file uploaded successfully.`);
@@ -155,7 +153,6 @@ const ListTeacher = () => {
 
         // Assuming the first row contains headers
         const [headers, ...rows] = formattedData;
-        console.log('Headers:', headers);
 
         // Create table data
         const tableData = rows.map((row, index) => ({
@@ -185,7 +182,7 @@ const ListTeacher = () => {
     reader.readAsArrayBuffer(file);
   };
 
-  const columns: ColumnsType<DataType> = [
+  const columns = [
     {
       title: 'STT',
       key: 'index',
@@ -255,7 +252,6 @@ const ListTeacher = () => {
 
   const handleDelete = async (id) => {
     try {
-      console.log(id)
       deleteUserById(id)
 
     } catch (error) {
@@ -273,7 +269,6 @@ const ListTeacher = () => {
       okType: 'danger',
       cancelText: 'No',
       onOk() {
-        console.log('OK');
         handleDelete(id)
       },
       onCancel() {

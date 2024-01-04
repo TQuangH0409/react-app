@@ -71,7 +71,6 @@ const getUserById = async (id) => {
 
     // Xử lý thành công nếu cần
     const updatedUserData = await response.json();
-    console.log('User updated successfully:', updatedUserData);
 
     // Trả về dữ liệu sau khi cập nhật (nếu cần)
     return updatedUserData;
@@ -94,7 +93,6 @@ const updateUserById = async (id, body) => {
 
     // Xử lý thành công nếu cần
     const updatedUserData = await response.json();
-    console.log('User updated successfully:', updatedUserData);
 
     // Trả về dữ liệu sau khi cập nhật (nếu cần)
     return updatedUserData;
@@ -113,7 +111,6 @@ const deleteUserById = async (id,body) => {
     }
 
     const updatedUserData = await response.json();
-    console.log('User delete successfully:', updatedUserData);
 
     return updatedUserData;
   } catch (error) {
@@ -160,7 +157,6 @@ const createUser = async (valueUser) => {
       throw new Error(errorData.message || 'create user failed');
     }
     const userData = await response.json();
-    console.log('User created successfully:', userData);
 
     return userData;
   } catch (error) {

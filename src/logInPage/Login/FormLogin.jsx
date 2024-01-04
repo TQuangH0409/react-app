@@ -3,6 +3,7 @@ import Input from "../../components/Input/input";
 import "./FormLogin.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { login } from "../../apis/apiLogin";
 
 function FormLogin({ errorLogin = false }) {
   const [email, setEmail] = useState("");
@@ -21,17 +22,9 @@ function FormLogin({ errorLogin = false }) {
   const handleSubmit = async (event) => {
     try {
       event.preventDefault();
-      const res = await axios.post(
-        `http://35.213.168.72:8000/api/v1/auth/login`,
-        {
-          email: email,
-          password: password,
-        }
-      );
-      if (res) {
-        const token = res.data.accessToken;
-        localStorage.setItem("token", token);
-        navigate('/info-teacher');
+      await login(email, password);
+      if (localStorage.getItem("roles")) {
+        navigate("/student");
       }
       // Here, you can handle the form submission, e.g., call an authentication API
       // console.log({

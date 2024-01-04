@@ -116,7 +116,6 @@ export const ListStudent = () => {
     accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     action: "https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188",
     beforeUpload: (file) => {
-      console.log(file);
       if (droppedFile > 1) {
         message.warning(
           `Multiple files are not allowed. Only one CSV file will be uploaded at a time.`
@@ -135,7 +134,6 @@ export const ListStudent = () => {
     onChange(info) {
       const { status } = info.file;
       if (status !== "uploading") {
-        console.log(info.file, info.fileList);
       }
       if (status === "done") {
         message.success(`${info.file.name} file uploaded successfully.`);
@@ -165,7 +163,6 @@ export const ListStudent = () => {
 
         // Assuming the first row contains headers
         const [headers, ...rows] = formattedData;
-        console.log('Headers:', headers);
 
         // Create table data
         const tableData = rows.map((row, index) => ({
@@ -289,7 +286,6 @@ export const ListStudent = () => {
     try {
       // Kiểm tra và lấy giá trị từ form
       const values = await update.validateFields();
-      console.log(values)
       // Gọi hàm cập nhật
       //await updateUserById(id, values);
       // Đóng modal sau khi cập nhật thành công
@@ -316,7 +312,6 @@ export const ListStudent = () => {
       // Kết hợp formValues và additionalFields
       const values = { ...formValues, ...additionalFields };
 
-      console.log(values);
       // Gọi hàm cập nhật
       //await createUser(values);
       create.resetFields()

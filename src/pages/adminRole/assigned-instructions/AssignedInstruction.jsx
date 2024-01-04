@@ -11,10 +11,6 @@ const AssignedInstruction = () => {
   const subTable = [];
 
   const expandedRowRenderFunc = (datas) => {
-    console.log(
-      "🚀 ~ file: AssignedInstruction.jsx:14 ~ expandedRowRenderFunc ~ datas:",
-      datas
-    );
     const columns = [
       {
         title: "STT",
