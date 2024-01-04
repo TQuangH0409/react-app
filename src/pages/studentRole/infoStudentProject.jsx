@@ -7,6 +7,7 @@ import {
   setInfoInstruct,
   setInfoProject,
   setInfoStudent,
+  setInfoReview,
 } from "../../hook/slice";
 import { getAss } from "../../apis/apiAss";
 import { EditOutlined, VerticalAlignTopOutlined } from "@ant-design/icons";
@@ -63,6 +64,8 @@ const InfoStudentProject = () => {
   const [student, setStudent] = useState({});
   const [instruct, setInstruct] = useState(undefined);
   const [review, setReview] = useState(undefined);
+  const [project, setProject] = useState({});
+  const [projectDetail, setProjectDetail] = useState({});
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -70,6 +73,7 @@ const InfoStudentProject = () => {
       try {
         const s = await getUserById();
         setStudent(s);
+
         const ass = await getAss({
           student: localStorage.getItem("userId"),
           type: "INSTRUCT",
@@ -77,10 +81,22 @@ const InfoStudentProject = () => {
         const instruct = await getUserById(ass?.teacher.id);
         setInstruct(instruct);
 
-        const project = await getProjectByStudent();
+        const rev = await getAss({
+          student: localStorage.getItem("userId"),
+          type: "REVIEW",
+        });
+        const review = await getUserById(rev?.teacher.id);
+        setInstruct(review);
+
+        const project = await getProjectByStudent(s.id);
+        setProject(project);
+
         const projectDetail = await getProjectById(project.id);
+        setProjectDetail(projectDetail);
+
         dispatch(setInfoStudent(s));
         dispatch(setInfoInstruct(instruct));
+        dispatch(setInfoReview(review));
         dispatch(setInfoProject(projectDetail));
       } catch (error) {}
     };
@@ -105,7 +121,7 @@ const InfoStudentProject = () => {
               <Col span={8}>
                 <div className="avatar">
                   <img
-                    src="https://drive.google.com/uc?id=1k6R3GiOpZB6YZSPmvCuJQSNtk1kTgY1s&export=download"
+                    src={instruct.avatar}
                     alt="Italian Trulli"
                     style={{
                       width: "100%",
@@ -120,7 +136,7 @@ const InfoStudentProject = () => {
                   <Col span={24}>
                     <Row span={24} style={{ marginBottom: "5px" }}>
                       <Col span={8}>Họ và tên:</Col>
-                      <Col span={16}>{instruct.fullname}</Col>
+                      <Col span={16}>{instruct?.fullname}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -129,7 +145,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Mã số giảng viên:</Col>
-                      <Col span={16}>{instruct.number}</Col>
+                      <Col span={16}>{instruct?.number}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -138,7 +154,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Cấp bậc:</Col>
-                      <Col span={16}>{instruct.class}</Col>
+                      <Col span={16}>{instruct?.class}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -147,7 +163,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Trường/Viện:</Col>
-                      <Col span={16}>{instruct.gen}</Col>
+                      <Col span={16}>{instruct?.school}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -156,7 +172,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Email:</Col>
-                      <Col span={16}>{instruct.email}</Col>
+                      <Col span={16}>{instruct?.email}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -166,8 +182,8 @@ const InfoStudentProject = () => {
                     <Row span={24}>
                       <Col span={8}>Lĩnh vực nghiên cứu:</Col>
                       <Col span={16}>
-                        {instruct.research_area &&
-                          instruct.research_area.map((r, idx) => {
+                        {instruct?.research_area &&
+                          instruct?.research_area.map((r, idx) => {
                             return (
                               <Col span={24} key={instruct + idx}>
                                 {r.name}
@@ -188,7 +204,7 @@ const InfoStudentProject = () => {
               <Col span={8}>
                 <div className="avatar">
                   <img
-                    src="https://drive.google.com/uc?id=1k6R3GiOpZB6YZSPmvCuJQSNtk1kTgY1s&export=download"
+                    src={review?.avatar}
                     alt="Italian Trulli"
                     style={{
                       width: "100%",
@@ -203,7 +219,7 @@ const InfoStudentProject = () => {
                   <Col span={24}>
                     <Row span={24} style={{ marginBottom: "5px" }}>
                       <Col span={8}>Họ và tên:</Col>
-                      <Col span={16}>{review.fullname}</Col>
+                      <Col span={16}>{review?.fullname}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -212,7 +228,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Mã số giảng viên:</Col>
-                      <Col span={16}>{review.number}</Col>
+                      <Col span={16}>{review?.number}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -221,7 +237,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Cấp bậc:</Col>
-                      <Col span={16}>{review.class}</Col>
+                      <Col span={16}>{review?.class}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -230,7 +246,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Trường/Viện:</Col>
-                      <Col span={16}>{review.gen}</Col>
+                      <Col span={16}>{review?.schooln}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -239,7 +255,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Email:</Col>
-                      <Col span={16}>{review.gen}</Col>
+                      <Col span={16}>{review?.email}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -248,7 +264,16 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Lĩnh vực nghiên cứu:</Col>
-                      <Col span={16}>{review.gen}</Col>
+                      <Col span={16}>
+                        {review?.research_area &&
+                          review?.research_area.map((r, idx) => {
+                            return (
+                              <Col span={24} key={review + idx}>
+                                {r.name}
+                              </Col>
+                            );
+                          })}
+                      </Col>
                     </Row>
                   </Col>
                 </Row>
@@ -267,8 +292,7 @@ const InfoStudentProject = () => {
           <Row style={{ margin: "20px" }}>
             <Col span={8}>Tên đề tài:</Col>
             <Col span={12}>
-              Thiết kế dịch vụ quản trị dữ liệu khách hàng và sản phẩm phục vụ
-              cho các phần mềm CPFR
+              {projectDetail?.name}
             </Col>
           </Row>
           <Row style={{ margin: "20px" }}>
@@ -281,8 +305,8 @@ const InfoStudentProject = () => {
               :
             </Col>
             <Col span={12}>
-              <a href="https://github.com/quangh0409/Decision_help_system_fe/blob/main/src/component/project/index.tsx">
-                https://github.com/quangh0409/Decision_help_system_fe/blob/main/src/component/project/index.tsx
+              <a href={projectDetail.source_code}>
+                {projectDetail.source_code}
               </a>
             </Col>
           </Row>
@@ -303,8 +327,7 @@ const InfoStudentProject = () => {
               <p>:</p>
             </Col>
             <Col span={12}>
-              Thiết kế dịch vụ quản trị dữ liệu khách hàng và sản phẩm phục vụ
-              cho các phần mềm CPFR
+              {projectDetail.report}
             </Col>
           </Row>
         </Col>

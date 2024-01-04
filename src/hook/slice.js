@@ -8,7 +8,7 @@ const counterSlice = createSlice({
     instruct: {},
     review: {},
     array: [],
-    check: 0,
+    isShow: false,
   },
   reducers: {
     // incremented: (state) => {
@@ -31,8 +31,8 @@ const counterSlice = createSlice({
     setArray: (state, action) => {
       state.array = action.payload;
     },
-    setCheck: (state, action) => {
-      state.check = action.payload;
+    setIsShow: (state, action) => {
+      state.isShow = action.payload;
     },
   },
 });
@@ -43,7 +43,7 @@ export const {
   setInfoProject,
   setInfoReview,
   setArray,
-  setCheck,
+  setIsShow,
 } = counterSlice.actions;
 
 export default counterSlice.reducer;

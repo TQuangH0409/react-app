@@ -22,6 +22,7 @@ import {
   ExclamationCircleFilled
 } from '@ant-design/icons';
 
+const { confirm } = Modal;
 const { Search } = Input;
 const onSearch = (value, _e, info) => console.log(info?.source, value);
 const ListFieldOfStudy = () => {

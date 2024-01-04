@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 const Sidebar = ({ user }) => {
   return (
     <div className="sidebar">
-      {/* <Link to="/info-teacher" className="sidebar-logo " href="#">
+      <Link to="/info-teacher" className="sidebar-logo " href="#">
         <div className="sidebar-brand-icon align-items-center justify-content-center">
           <img
             className="sidebar-img"
@@ -15,12 +15,11 @@ const Sidebar = ({ user }) => {
         </div>
       </Link>
 
-      <hr className="sidebar-divider my-0"></hr> */}
+      <hr className="sidebar-divider my-0"></hr>
 
       {/* <div > */}
       {/*admin */}
-      {/* {user.isAdmin &&*/}
-      {/* {(localStorage.getItem("roles") === "SA") && <Menu mode='inline'>
+      {/* {user.isAdmin &&*/}      {(localStorage.getItem("roles") === "SA") && <Menu mode='inline'>
         <Menu.Item key="list-student">
           Danh sách sinh viên
           <Link to="/admin/list-student"></Link>
@@ -50,7 +49,8 @@ const Sidebar = ({ user }) => {
           <Link to="/admin/assign-criticism"></Link>
         </Menu.Item>
         <hr className="sidebar-divider my-0"></hr>
-      </Menu>} */}
+      </Menu>}
+
 
       {/*student */}
       {localStorage.getItem("roles") === "S" && (
