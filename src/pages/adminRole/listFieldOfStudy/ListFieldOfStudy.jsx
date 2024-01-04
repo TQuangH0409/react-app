@@ -21,8 +21,6 @@ import {
   DeleteOutlined, FormOutlined, EyeOutlined,
   ExclamationCircleFilled
 } from '@ant-design/icons';
-import type { ColumnsType, TablePaginationConfi } from 'antd/es/table';
-const { confirm } = Modal;
 
 const { Search } = Input;
 const onSearch = (value, _e, info) => console.log(info?.source, value);

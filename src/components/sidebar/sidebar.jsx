@@ -5,20 +5,22 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
 const Sidebar = ({ user }) => {
   return (
-    <div className='sidebar'>
-      <Link to="/info-teacher" className='sidebar-logo ' href='#'>
+    <div className="sidebar">
+      {/* <Link to="/info-teacher" className="sidebar-logo " href="#">
         <div className="sidebar-brand-icon align-items-center justify-content-center">
-          <img className='sidebar-img' src="../img/logo-dai-hoc-bach-khoa.png" />
+          <img
+            className="sidebar-img"
+            src="../img/logo-dai-hoc-bach-khoa.png"
+          />
         </div>
-
       </Link>
 
-      <hr className="sidebar-divider my-0"></hr>
+      <hr className="sidebar-divider my-0"></hr> */}
 
       {/* <div > */}
       {/*admin */}
       {/* {user.isAdmin &&*/}
-      {(localStorage.getItem("roles") === "SA") && <Menu mode='inline'>
+      {/* {(localStorage.getItem("roles") === "SA") && <Menu mode='inline'>
         <Menu.Item key="list-student">
           Danh sách sinh viên
           <Link to="/admin/list-student"></Link>
@@ -48,11 +50,11 @@ const Sidebar = ({ user }) => {
           <Link to="/admin/assign-criticism"></Link>
         </Menu.Item>
         <hr className="sidebar-divider my-0"></hr>
-      </Menu>}
-
+      </Menu>} */}
 
       {/*student */}
-      {/* {user.isStudent} && <Menu>
+      {localStorage.getItem("roles") === "S" && (
+        <Menu>
           <Menu.Item key="student-information">
             Thông tin cá nhân
             <Link to="/student"></Link>
@@ -65,7 +67,7 @@ const Sidebar = ({ user }) => {
           </Menu.Item>
           <hr className="sidebar-divider my-0" key={Math.random()}></hr>
         </Menu>
-      }
+      )}
       {/*teacher */}
 
       {/* {user.isTeacher} && */}

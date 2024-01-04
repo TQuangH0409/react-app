@@ -3,19 +3,19 @@ import { createSlice } from "@reduxjs/toolkit";
 const counterSlice = createSlice({
   name: "store",
   initialState: {
-    student: {} | undefined,
-    project: {} | undefined,
-    instruct: {} | undefined,
-    review: {} | undefined,
+    student: {},
+    project: {},
+    instruct: {},
+    review: {},
     array: [],
+    check: 0,
   },
   reducers: {
-    incremented: (state) => {
-      state.student = undefined;
-      state.project = undefined;
-      state.instruct = undefined;
-      state.review = undefined;
-    },
+    // incremented: (state) => {
+    //   state.store.student = {
+    //     fullname: "",
+    //   };
+    // },
     setInfoStudent: (state, action) => {
       state.student = action.payload;
     },
@@ -31,16 +31,19 @@ const counterSlice = createSlice({
     setArray: (state, action) => {
       state.array = action.payload;
     },
+    setCheck: (state, action) => {
+      state.check = action.payload;
+    },
   },
 });
 
 export const {
-  incremented,
   setInfoStudent,
   setInfoInstruct,
   setInfoProject,
   setInfoReview,
   setArray,
+  setCheck,
 } = counterSlice.actions;
 
 export default counterSlice.reducer;

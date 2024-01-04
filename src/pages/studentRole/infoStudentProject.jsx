@@ -57,7 +57,7 @@ const InfoStudentProject = () => {
   const handleEditClick = () => {
     // Handle edit click event here
     // For example, update the URL when the edit icon is clicked
-     // Replace with your URL logic
+    // Replace with your URL logic
   };
 
   const [student, setStudent] = useState({});
@@ -67,20 +67,22 @@ const InfoStudentProject = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const s = await getUserById();
-      setStudent(s);
-      const ass = await getAss({
-        student: localStorage.getItem("userId"),
-        type: "INSTRUCT",
-      });
-      const instruct = await getUserById(ass?.teacher);
-      setInstruct(instruct);
+      try {
+        const s = await getUserById();
+        setStudent(s);
+        const ass = await getAss({
+          student: localStorage.getItem("userId"),
+          type: "INSTRUCT",
+        });
+        const instruct = await getUserById(ass?.teacher.id);
+        setInstruct(instruct);
 
-      const project = await getProjectByStudent();
-      const projectDetail = await getProjectById(project.id);
-      dispatch(setInfoStudent(s));
-      dispatch(setInfoInstruct(instruct));
-      dispatch(setInfoProject(projectDetail));
+        const project = await getProjectByStudent();
+        const projectDetail = await getProjectById(project.id);
+        dispatch(setInfoStudent(s));
+        dispatch(setInfoInstruct(instruct));
+        dispatch(setInfoProject(projectDetail));
+      } catch (error) {}
     };
 
     fetchData();

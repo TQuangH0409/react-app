@@ -16,10 +16,6 @@ const AssignCriticism = () => {
   const subTable = [];
 
   const expandedRowRenderFunc = (datas) => {
-    console.log(
-      "🚀 ~ file: Assignedreviewion.jsx:14 ~ expandedRowRenderFunc ~ datas:",
-      datas
-    );
     const columns = [
       {
         title: "STT",

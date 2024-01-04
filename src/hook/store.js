@@ -5,5 +5,5 @@ export default configureStore({
   reducer: {
     store: counterReducer,
   },
-  // middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(getDefaultMiddleware())
+  // middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(getDefaultMiddleware()) 
 });
