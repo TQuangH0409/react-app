@@ -71,7 +71,7 @@ const Sidebar = ({ user }) => {
       {/*teacher */}
 
       {/* {user.isTeacher} && */}
-      {/* <Menu>
+      {/*<Menu>
                     <Menu.Item key="student-information">
                         Thông tin cá nhân
                         <Link to="/info-teacher"></Link>

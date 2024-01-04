@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { getAllResearchArea } from "../../../apis/apiAdmin"
+import { getAllResearchArea, createResearchArea, deleteResearchArea, updateResearchArea, getResearchAreaById } from "../../../apis/apiAdmin"
 import axios from 'axios';
+import unorm from 'unorm';
 import {
   Button, Modal, Cascader,
   DatePicker,
@@ -17,7 +18,8 @@ import "../../adminRole/globalCSS.css"
 import {
   UserAddOutlined,
   FileAddOutlined,
-  DeleteOutlined, FormOutlined, EyeOutlined
+  DeleteOutlined, FormOutlined, EyeOutlined,
+  ExclamationCircleFilled
 } from '@ant-design/icons';
 
 const { Search } = Input;
@@ -39,17 +41,6 @@ const ListFieldOfStudy = () => {
   const [value, setValue] = useState('');
   const [modalView, setModalView] = useState(false);
   const [modalUpdate, setModalUpdate] = useState(false);
-
-  const login = async () => {
-    const res = await axios.post(`http://35.213.168.72:8000/api/v1/auth/login`, { email: "quang.vt198256@sis.hust.edu.vn", password: "X9)e=P_CE!Yw" })
-    if (res) {
-      const token = res.data.accessToken;
-      localStorage.setItem("token", token);
-    }
-  }
-  useEffect(() => {
-    login()
-  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -82,14 +73,67 @@ const ListFieldOfStudy = () => {
       title: 'Tác vụ',
       fixed: 'right',
       width: 100,
-      render: () => (<div className='action-button' size="middle">
-        <Button className='button-view' shape="circle" icon={<EyeOutlined />}> </Button>
-        <Button className='button-fix' shape="circle" icon={<FormOutlined />}> </Button>
-        <Button className='button-delete' shape="circle" icon={<DeleteOutlined />}> </Button>
+      render: (_, record) => (<div className='action-button' size="middle">
+        <Button className='button-view' onClick={() => handleView(record)} shape="circle" icon={<EyeOutlined />}> </Button>
+        <Button className='button-fix' onClick={() => handleUpdate(record)} shape="circle" icon={<FormOutlined />}> </Button>
+        <Button className='button-delete' onClick={() => showDeleteConfirm(record)} shape="circle" icon={<DeleteOutlined />}> </Button>
       </div>
       ),
     },
   ];
+
+  const handleView = async (record) => {
+    try {
+      const researchData = await getResearchAreaById(record.id);
+      setId(record.id)
+      setDataResearch(researchData);
+      setModalView(true);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  }
+
+  const handleUpdate = async (record) => {
+    try {
+      const userData = await getResearchAreaById(record.id);
+      setId(record.id)
+      setDataResearch(userData);
+      setModalUpdate(true);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  }
+
+  const handleDelete = async (id) => {
+    try {
+      const res = await deleteResearchArea(id)
+      const data = await getAllResearchArea();
+      setData(data);
+      console.log(data)
+
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  }
+  const showDeleteConfirm = async (record) => {
+    const userData = await getResearchAreaById(record.id);
+    setId(record.id);
+    confirm({
+      title: 'Bạn có muốn xóa lĩnh vực này?',
+      icon: <ExclamationCircleFilled />,
+      content: '',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        console.log('OK');
+        handleDelete(record.id)
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  };
 
   useEffect(() => {
     if (dataResearch) {
@@ -98,6 +142,50 @@ const ListFieldOfStudy = () => {
     }
   }, [dataResearch, detail]);
 
+  const handleOk = async () => {
+
+    const formValues = await update.validateFields();
+    console.log(formValues)
+    const res = await updateResearchArea(id, formValues);
+    update.resetFields()
+    setModalUpdate(false)
+    const data = await getAllResearchArea();
+    setData(data);
+};
+
+  const handleCreate = async () => {
+
+      const formValues = await create.validateFields();
+      console.log(formValues)
+      const res = await createResearchArea(formValues);
+      create.resetFields()
+      setModal1Open(false)
+      const data = await getAllResearchArea();
+      setData(data);
+  };
+
+  const onSearch = (value) => {
+    const normalizedValue = unorm.nfd(value); // Chuẩn hóa văn bản đầu vào
+    const filterData = data.filter((o) =>
+      Object.keys(o).some((k) =>
+        unorm.nfd(String(o[k])).toLowerCase().includes(normalizedValue.toLowerCase())
+      )
+    );
+    setData(filterData);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (value.trim() === '') {
+        // Fetch all users with the position "STUDENT"
+        const newData = await getAllResearchArea();
+        setData(newData);
+      }
+    };
+
+    fetchData();
+    setPage(1);
+  }, [value]);
 
   return (
 
@@ -113,37 +201,30 @@ const ListFieldOfStudy = () => {
           open={modal1Open}
           okText="Thêm"
           cancelText="Từ chối"
-          onOk={() => setModal1Open(false)}
+          onOk={handleCreate}
           onCancel={() => setModal1Open(false)}
         >
           <Form
             layout="vertical"
+            form={create}
           >
 
-            <Form.Item label="Tên">
+            <Form.Item label="Tên" name="name">
               <Input />
             </Form.Item>
-            <Form.Item label="Mã số">
+            <Form.Item label="Mã số" name="number">
               <Input />
             </Form.Item>
 
           </Form>
         </Modal>
 
-        <Search
-          className='input-search'
-          placeholder="Search Name"
+        <Input.Search
+          className="input-search"
+          placeholder="Tìm kiếm theo tên"
           value={value}
-          onChange={e => {
-            const currValue = e.target.value;
-            setValue(currValue);
-            const filteredData = data.filter(entry =>
-              entry.name.includes(currValue)
-            );
-            setDataSource(filteredData);
-          }}
-          placeholder="Tìm kiếm"
           onSearch={onSearch}
+          onChange={(e) => setValue(e.target.value)}
           style={{
             width: 500,
             paddingLeft: 10,
@@ -166,6 +247,51 @@ const ListFieldOfStudy = () => {
           dataSource={data}
         />
       </div>
+
+      <Modal
+        title="Chi tiết"
+        centered
+        open={modalView}
+        okText="OK"
+        onOk={() => setModalView(false)}
+        onCancel={() => setModalView(false)}
+        cancelButtonProps={{ style: { display: 'none' } }}
+      >
+        <Form layout="vertical"
+          form={update}>
+          <Form.Item label="Tên" name="name">
+            <Input />
+          </Form.Item>
+          
+          <Form.Item label="Mã số" name="number">
+            <Input />
+          </Form.Item>
+          
+        </Form>
+      </Modal>
+
+      <Modal
+        title="Chi tiết"
+        centered
+        open={modalUpdate}
+        okText="OK"
+
+        onOk={handleOk}
+        onCancel={() => setModalUpdate(false)}
+        cancelText="Cancle"
+      >
+        <Form layout="vertical"
+          form={update}>
+          <Form.Item label="Tên" name="name">
+            <Input />
+          </Form.Item>
+          
+          <Form.Item label="Mã số" name="number">
+            <Input />
+          </Form.Item>
+          
+        </Form>
+      </Modal>
 
     </div >
   )

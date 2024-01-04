@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Input, Select, Space, Table } from "antd";
 import { Option } from "antd/es/mentions";
 import { getAssInstruct } from "../../../apis/apiAss";
+import unorm from "unorm";
 
 const AssignedInstruction = () => {
   const [instruct, setInstruct] = useState([]);
   const [array, setArray] = useState([]);
   const [listTeacher, setListTeacher] = useState([]);
   const [limit, setLimit] = useState(0);
+  const [page, setPage] = useState(1);
+  const [paginationSize, setPaginationSize] = useState(10)
+  const [value, setValue] = useState('');
   const subTable = [];
 
   const expandedRowRenderFunc = (datas) => {
@@ -62,9 +66,9 @@ const AssignedInstruction = () => {
   };
   const columns = [
     {
-      title: "STT",
-      dataIndex: "STT",
-      key: "STT",
+      title: 'STT',
+      key: 'index',
+      render: (text: string, record: any, index: number) => (page - 1) * paginationSize + index + 1,
     },
     {
       title: "Họ và tên",
@@ -82,92 +86,130 @@ const AssignedInstruction = () => {
       key: "school",
     },
   ];
-  const data = [];
-  if (instruct.length > 0) {
-    let i = 0;
-    for (const e of instruct) {
-      data.push({
-        key: i.toString(),
+  const [data, setData] = useState([]);
+  const getDataInstruction = async () => {
+    if (instruct.length > 0) {
+      let i = 0;
+      const newData = instruct.map((e,index) => ({
+        key: index,
         STT: i.toString(),
         name: e.teacher.fullname,
         number: e.teacher.number,
-        school:
-          e.teacher.school || "Trường công nghệ thông tin và truyền thông",
+        school: e.teacher.school || "Trường công nghệ thông tin và truyền thông",
         student: e.student,
-      });
-      //   subTable.push(expandedRowRenderFunc(e.student));
-      i++;
-    }
+      }));
+    setData(newData)
+    console.log(data)
   }
-  return (
-    <div className="list-student mb-4">
-      <div className="content-header py-3">
-        <h6 className="m-0 font-weight-bold text-primary">
-          Danh sách phân công giáo viên hướng dẫn
-        </h6>
+}
 
-        <div className="select-semester">
-          <span style={{ color: "black", marginLeft: "10px" }}>Kỳ học: </span>
-          <Select defaultValue="20231" style={{ width: 120 }}>
-            <Option value="20231">20231</Option>
-          </Select>
-        </div>
+useEffect(() => {
+  getDataInstruction();
+}, [instruct]);
 
-        <Space.Compact size="large" style={{ marginLeft: "20px" }}>
-          <Input
-            addonBefore="số lượng sinh viên/giảng viên"
-            placeholder="number"
-            onChange={(e) => {
-              setLimit(e.target.value);
-            }}
-          />
-        </Space.Compact>
+const onSearch = (value) => {
+  const normalizedValue = unorm.nfd(value); // Chuẩn hóa văn bản đầu vào
+  const filterData = data.filter((o) =>
+    Object.keys(o).some((k) => {
+      // Nếu giá trị của thuộc tính là mảng đối tượng
+      if (Array.isArray(o[k])) {
+        return o[k].some((nestedObj) =>
+          Object.values(nestedObj).some((nestedValue) =>
+            unorm.nfd(String(nestedValue)).toLowerCase().includes(normalizedValue.toLowerCase())
+          )
+        );
+      }
+      // Nếu giá trị của thuộc tính không phải là mảng đối tượng
+      return unorm.nfd(String(o[k])).toLowerCase().includes(normalizedValue.toLowerCase());
+    })
+  );
+  setData(filterData);
+};
 
-        <div>
-          <Button
-            type="primary"
-            onClick={async () => {
-              const res = await getAssInstruct(limit, "DRAFT");
-              setInstruct(res.assignment);
-            }}
-          >
-            Tạo nháp
-          </Button>
-        </div>
+useEffect(() => {
+  const fetchData = async () => {
+    if (value.trim() === '') {
+      // Fetch all users with the position "STUDENT"
+      getDataInstruction();
+    }
+  };
 
-        <div>
-          <Button
-            type="primary"
-            onClick={async () => {
-              const res = await getAssInstruct(limit, "SAVE");
-              setInstruct(res.assignment);
-            }}
-          >
-            Lưu
-          </Button>
-        </div>
+  fetchData();
+  setPage(1);
+}, [value]);
+
+return (
+  <div className="list-student mb-4">
+    <div className="content-header py-3">
+      <h6 style={{ width: "180px" }} className="m-0 font-weight-bold text-primary">
+        Danh sách phân công giáo viên hướng dẫn
+      </h6>
+
+      <div className="select-semester">
+        <span style={{ color: "black", marginLeft: "10px" }}>Kỳ học: </span>
+        <Select defaultValue="20231" style={{ width: "120px" }}>
+          <Option value="20231">20231</Option>
+        </Select>
       </div>
 
-      <div className="content-main">
-        <Table
-          className="table-list-student"
-          columns={columns}
-          expandable={{
-            expandedRowRender: (record) => {
-              //   console.log(
-              //     "🚀 ~ file: AssignedInstruction.jsx:1 ~ AssignedInstruction ~ record:",
-              //     record
-              //   );
-              return expandedRowRenderFunc(record.student);
-            },
-            // defaultExpandedRowKeys: ["0"],
-            // rowExpandable: (record) => record.student > 0 !== 'Not Expandable',
+      <div className="select-number-ofStudent">
+        <span style={{ color: "black", marginLeft: "10px" }}>Số lượng sinh viên/giảng viên: </span>
+        <Input
+          style={{ width: 120 }}
+          placeholder="Number"
+          onChange={(e) => {
+            setLimit(e.target.value);
           }}
-          dataSource={data}
-          size="10"
         />
       </div>
+      <Button style={{ margin: "0 5px 0 5px" }}
+        type="primary"
+        onClick={async () => {
+          const res = await getAssInstruct(limit, "DRAFT");
+          setInstruct(res.assignment);
+          
+        }}
+      >
+        Tạo nháp
+      </Button>
+
+      <Button style={{ margin: "0" }}
+        type="primary"
+        onClick={async () => {
+          const res = await getAssInstruct(limit, "SAVE");
+          setInstruct(res.assignment);
+        }}
+      >
+        Lưu
+      </Button>
+      <Input.Search
+        className="input-search"
+        placeholder="Tìm kiếm theo tên"
+        value={value}
+        onSearch={onSearch}
+        onChange={(e) => setValue(e.target.value)}
+        style={{
+          width: 300,
+          paddingLeft: 10,
+        }}
+      />
+
     </div>
-  );
+
+    <div className="content-main">
+      <Table
+        className="table-list-student"
+        columns={columns}
+        expandable={{
+          expandedRowRender: (record) => {
+            return expandedRowRenderFunc(record.student);
+          },
+        }}
+        dataSource={data}
+        size="10"
+      />
+    </div>
+  </div>
+);
 };
 export default AssignedInstruction;

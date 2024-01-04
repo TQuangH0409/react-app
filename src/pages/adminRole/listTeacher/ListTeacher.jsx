@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import * as XLSX from 'xlsx';
-import { getAllUserByPosition, getAllResearchArea, getUserById, optionYear, optionSchool, updateUserById, createUser, deleteUserById } from "../../../apis/apiAdmin"
+import unorm from 'unorm';
+import { getAllUserByPosition, getAllResearchArea, getUserById, optionYear, optionSchool, updateUserById, createUser, deleteUserById, createUserByFile } from "../../../apis/apiAdmin"
 import {
   Button, Modal, Cascader,
   DatePicker,
@@ -26,7 +27,7 @@ import {
 const { confirm } = Modal;
 
 const { Search } = Input;
-const onSearch = (value, _e, info) => console.log(info?.source, value);
+//const onSearch = (value, _e, info) => console.log(info?.source, value);
 const ListTeacher = () => {
   const [modal1Open, setModal1Open] = useState(false);
   const [modal2Open, setModal2Open] = useState(false);
@@ -65,20 +66,10 @@ const ListTeacher = () => {
     dataResearch?.length &&
     dataResearch.map((value) => {
       return {
-        value: value.name,
+        value: value.number,
         label: value.name,
       }
     });
-  const login = async () => {
-    const res = await axios.post(`http://35.213.168.72:8000/api/v1/auth/login`, { email: "quang.vt198256@sis.hust.edu.vn", password: "X9)e=P_CE!Yw" })
-    if (res) {
-      const token = res.data.accessToken;
-      localStorage.setItem("token", token);
-    }
-  }
-  useEffect(() => {
-    login()
-  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -156,11 +147,15 @@ const ListTeacher = () => {
 
         // Create table data
         const tableData = rows.map((row, index) => ({
-          key: index,
+
           ...row.reduce((acc, value, colIndex) => {
             acc[headers[colIndex]] = value;
             return acc;
           }, {}),
+          roles: ['T'],
+          position: "TEACHER",
+          is_active: true,
+          password: "1",
         }));
 
         setTableDataExcel(tableData);
@@ -250,9 +245,14 @@ const ListTeacher = () => {
     }
   }
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, body) => {
     try {
-      deleteUserById(id)
+      const body = { is_active: false }
+      console.log(id, body)
+      const res = await deleteUserById(id, body)
+      const data = await getAllUserByPosition("TEACHER");
+      setData(data);
+      console.log(data)
 
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -269,7 +269,8 @@ const ListTeacher = () => {
       okType: 'danger',
       cancelText: 'No',
       onOk() {
-        handleDelete(id)
+        console.log('OK');
+        handleDelete(record.id)
       },
       onCancel() {
         console.log('Cancel');
@@ -281,32 +282,36 @@ const ListTeacher = () => {
     if (dataTeacher) {
       detail.setFieldsValue(dataTeacher);
       update.setFieldsValue(dataTeacher);
-      const researchAreaNames = dataTeacher.research_area.map(area => area.name);
+      const researchAreaNames = dataTeacher.research_area.map(area => area.number);
       detail.setFieldsValue({ research_area: researchAreaNames });
       update.setFieldsValue({ research_area: researchAreaNames });
     }
   }, [dataTeacher, detail]);
 
   const handleOk = async () => {
-    try {
-      
-      // Kiểm tra và lấy giá trị từ form
-      const body = await update.validateFields();
-      console.log(body)
-      // Gọi hàm cập nhật
-      await updateUserById(id, body);
-      // Đóng modal sau khi cập nhật thành công
-      setModalUpdate(false);
-    } catch (error) {
-      console.error('Error updating user:', error);
-      // Xử lý lỗi nếu cần
-    }
+
+    const formValues = await update.validateFields();
+    const researchAreaArray = formValues.research_area.map(area => ({ number: area }));
+    console.log("Research Area Objects:", researchAreaArray);
+    // Tạo một đối tượng mới với các trường bổ sung
+    const additionalFields = {
+      research_area: researchAreaArray
+    };
+
+    // Kết hợp formValues và additionalFields
+    const values = { ...formValues, ...additionalFields };
+    const res = await updateUserById(id, values);
+    update.resetFields()
+    setModalUpdate(false)
+    const data = await getAllUserByPosition("TEACHER");
+    setData(data);
   };
 
   const handleCreate = async () => {
     try {
       // Kiểm tra và lấy giá trị từ form
       const formValues = await create.validateFields();
+      const researchAreaArray = formValues.research_area.map(area => ({ number: area }));
 
       // Tạo một đối tượng mới với các trường bổ sung
       const additionalFields = {
@@ -314,22 +319,64 @@ const ListTeacher = () => {
         position: "TEACHER",
         is_active: true,
         password: "1",
+        research_area: researchAreaArray
       };
 
       // Kết hợp formValues và additionalFields
       const values = { ...formValues, ...additionalFields };
-
-      console.log(values);
-      // Gọi hàm cập nhật
-      //await createTeacher(values);
+      console.log(values)
+      const res = await createUser(values);
       create.resetFields()
-      // Đóng modal sau khi cập nhật thành công
-      setModalUpdate(false);
+      setModal1Open(false)
+      const data = await getAllUserByPosition("TEACHER");
+      setData(data);
     } catch (error) {
       console.error('Error updating user:', error);
       // Xử lý lỗi nếu cần
     }
   };
+  const handleCreateUserByFile = async () => {
+    const body = tableDataExcel
+    const res = await createUserByFile(body);
+    console.log(res)
+    setModalExcel(false)
+    setModal2Open(false)
+    const data = await getAllUserByPosition("TEACHER");
+    console.log(res)
+    setData(data);
+  }
+
+  const onSearch = (value) => {
+    const normalizedValue = unorm.nfd(value); // Chuẩn hóa văn bản đầu vào
+    const filterData = data.filter((o) =>
+    Object.keys(o).some((k) => {
+      // Nếu giá trị của thuộc tính là mảng đối tượng
+      if (Array.isArray(o[k])) {
+        return o[k].some((nestedObj) =>
+          Object.values(nestedObj).some((nestedValue) =>
+            unorm.nfd(String(nestedValue)).toLowerCase().includes(normalizedValue.toLowerCase())
+          )
+        );
+      }
+      // Nếu giá trị của thuộc tính không phải là mảng đối tượng
+      return unorm.nfd(String(o[k])).toLowerCase().includes(normalizedValue.toLowerCase());
+    })
+  );
+    setData(filterData);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (value.trim() === '') {
+        // Fetch all users with the position "STUDENT"
+        const newData = await getAllUserByPosition("TEACHER");
+        setData(newData);
+      }
+    };
+
+    fetchData();
+    setPage(1);
+  }, [value]);
 
 
   return (
@@ -346,31 +393,31 @@ const ListTeacher = () => {
           open={modal1Open}
           okText="Thêm"
           cancelText="Từ chối"
-          onOk={() => setModal1Open(false)}
+          onOk={handleCreate}
           onCancel={() => setModal1Open(false)}
         >
           <Form
             layout="vertical"
             form={create}
           >
-            <Form.Item label="Họ và tên">
+            <Form.Item label="Họ và tên" name="fullname">
               <Input />
             </Form.Item>
-            <Form.Item label="CCCD">
+            <Form.Item label="CCCD" name="cccd">
               <Input />
             </Form.Item>
-            <Form.Item label="Mã số giảng viên">
+            <Form.Item label="Mã số giảng viên" name="number">
               <Input />
             </Form.Item>
-            <Form.Item label="Email">
+            <Form.Item label="Email" name="email">
               <Input />
             </Form.Item>
-            <Form.Item label="Trường/Viện:">
+            <Form.Item label="Trường/Viện:" name="school">
               <Select options={optionSchool}>
 
               </Select>
             </Form.Item>
-            <Form.Item label="Lĩnh vực nghiên cứu">
+            <Form.Item label="Lĩnh vực nghiên cứu" name="research_area">
               <Select mode='multiple' options={dataSelect}>
 
               </Select>
@@ -411,7 +458,7 @@ const ListTeacher = () => {
           open={modalExcel}
           cancelText="Từ chối"
           onCancel={() => setModalExcel(false)}
-          onOk={() => setModalExcel(false)}
+          onOk={handleCreateUserByFile}
         >
           <Table className='table-list-student-excel'
             pagination={{
@@ -426,20 +473,12 @@ const ListTeacher = () => {
           />
         </Modal>
 
-        <Search
-          className='input-search'
-          placeholder="Search Name"
+        <Input.Search
+          className="input-search"
+          placeholder="Tìm kiếm theo tên"
           value={value}
-          onChange={e => {
-            const currValue = e.target.value;
-            setValue(currValue);
-            const filteredData = data.filter(entry =>
-              entry.name.includes(currValue)
-            );
-            setData(filteredData);
-          }}
-          placeholder ="Tìm kiếm"
           onSearch={onSearch}
+          onChange={(e) => setValue(e.target.value)}
           style={{
             width: 500,
             paddingLeft: 10,
@@ -477,7 +516,7 @@ const ListTeacher = () => {
           <Form.Item label="Họ và tên" name="fullname" fieldId='fullname'>
             <Input readOnly />
           </Form.Item>
-          <Form.Item label="CCCD" name="CCCD">
+          <Form.Item label="CCCD" name="cccd">
             <Input readOnly />
           </Form.Item>
           <Form.Item label="Mã số giảng viên" name="number">
@@ -513,7 +552,7 @@ const ListTeacher = () => {
           <Form.Item label="Họ và tên" name="fullname" fieldId='fullname'>
             <Input />
           </Form.Item>
-          <Form.Item label="CCCD" name="CCCD">
+          <Form.Item label="CCCD" name="cccd">
             <Input />
           </Form.Item>
           <Form.Item label="Mã số giảng viên" name="number">
