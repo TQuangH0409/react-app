@@ -98,41 +98,71 @@ const AssignCriticism = () => {
       key: "school",
     },
   ];
-  const data = [];
-  if (review.length > 0) {
-    console.log(review);
-    let i = 0;
-    for (const e of review) {
-      const project = [];
+const [data, setData] = useState([]);
 
-      for (const p of e.project) {
-        const res = async (px) => {
-          const instruct = await getUserById(px.teacher_instruct_id);
-          const student = await getUserById(px.student_id);
-          project.push({
-            ...px,
+  const getDataCriticism = async () => {
+    if (review.length > 0) {
+      const newData = await Promise.all(review.map(async (e, i) => {
+        const project = await Promise.all(e.project.map(async (p) => {
+          const instruct = await getUserById(p.teacher_instruct_id);
+          const student = await getUserById(p.student_id);
+          return {
+            ...p,
             student: student,
             teacher: instruct,
-          });
+          };
+        }));
+  
+        return {
+          key: i.toString(),
+          STT: i.toString(),
+          name: e.teacher.fullname,
+          number: e.teacher.number,
+          school: e.teacher.school || "Trường công nghệ thông tin và truyền thông",
+          project: project,
+          teacher: e.teacher,
         };
-        res(p);
-      }
-      console.log(project);
-
-      data.push({
-        key: i.toString(),
-        STT: i.toString(),
-        name: e.teacher.fullname,
-        number: e.teacher.number,
-        school:
-          e.teacher.school || "Trường công nghệ thông tin và truyền thông",
-        project: project,
-        teacher: e.teacher,
-      });
-      //   subTable.push(expandedRowRenderFunc(e.student));
-      i++;
+      }));
+  
+      setData(newData);
     }
-  }
+  };
+  
+  useEffect(() => {
+    getDataCriticism();
+  }, [review]);
+
+  const onSearch = (value) => {
+    const normalizedValue = unorm.nfd(value); // Chuẩn hóa văn bản đầu vào
+    const filterData = data.filter((o) =>
+      Object.keys(o).some((k) => {
+        // Nếu giá trị của thuộc tính là mảng đối tượng
+        if (Array.isArray(o[k])) {
+          return o[k].some((nestedObj) =>
+            Object.values(nestedObj).some((nestedValue) =>
+              unorm.nfd(String(nestedValue)).toLowerCase().includes(normalizedValue.toLowerCase())
+            )
+          );
+        }
+        // Nếu giá trị của thuộc tính không phải là mảng đối tượng
+        return unorm.nfd(String(o[k])).toLowerCase().includes(normalizedValue.toLowerCase());
+      })
+    );
+    setData(filterData);
+  };
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      if (value.trim() === '') {
+        // Fetch all users with the position "STUDENT"
+        getDataCriticism();
+      }
+    };
+  
+    fetchData();
+    setPage(1);
+  }, [value]);
+
   return (
     <div className="list-student mb-4">
       <div className="content-header py-3">
@@ -189,7 +219,7 @@ const AssignCriticism = () => {
           className="input-search"
           placeholder="Tìm kiếm theo tên"
           value={value}
-        
+          onSearch={onSearch}
           onChange={(e) => setValue(e.target.value)}
           style={{
             width: 300,

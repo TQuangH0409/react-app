@@ -171,7 +171,6 @@ return (
         onClick={async () => {
           const res = await getAssInstruct(limit, "DRAFT");
           setInstruct(res.assignment);
-          
         }}
       >
         Tạo nháp
