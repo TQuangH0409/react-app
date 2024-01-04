@@ -1,7 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import axios from 'axios';
 import * as XLSX from 'xlsx';
-import { getAllUserByPosition, getAllResearchArea, getUserById, optionYear, optionSchool, updateUserById, createUser } from "../../../apis/apiAdmin"
+import unorm from 'unorm';
+import {
+  getAllUserByPosition, getAllResearchArea, getUserById, optionYear,
+  optionSchool, updateUserById, createUser, deleteUserById, createUserByFile
+} from "../../../apis/apiAdmin"
 import {
   Button,
   Modal,
@@ -23,12 +27,13 @@ import {
   UserAddOutlined,
   FileAddOutlined,
   DeleteOutlined, FormOutlined, EyeOutlined,
-  InboxOutlined
+  InboxOutlined, ExclamationCircleFilled
 } from '@ant-design/icons';
 import type { ColumnsType, TablePaginationConfi } from 'antd/es/table';
 import create from '@ant-design/icons/lib/components/IconFont';
+const { confirm } = Modal;
 
-interface DataType {}
+interface DataType { }
 const { Search } = Input;
 const onSearch = (value, _e, info) => console.log(info?.source, value);
 
@@ -38,6 +43,7 @@ export const ListStudent = () => {
   const [modalView, setModalView] = useState(false);
   const [modalUpdate, setModalUpdate] = useState(false);
   const [modalExcel, setModalExcel] = useState(false);
+  const [loading, setLoading] = useState(true);
 
 
   const Option = Select.Option;
@@ -56,40 +62,33 @@ export const ListStudent = () => {
   const [dataResearch, setDataResearch] = useState([]);
   const [dataStudent, setDataStudent] = useState();
   const [id, setId] = useState();
-  const dataTable =
-    data?.length &&
-    data?.map((value) => {
+  const [semester, setSemester] = useState('20231');
+
+  const dataTable = useMemo(() => {
+    return data?.map((value) => {
       return {
         ...value,
         key: value.id,
-        research_area: value?.research_area?.map((val) => val.name
-        ).join(', '),
+        research_area: value?.research_area?.map((val) => val.name).join(', '),
       };
     });
+  }, [data]);
   const dataSelect =
     dataResearch?.length &&
     dataResearch.map((value) => {
       return {
-        value: value.name,
+        value: value.number,
         label: value.name,
       }
     });
-  const login = async () => {
-    const res = await axios.post(`http://35.213.168.72:8000/api/v1/auth/login`, { email: "quang.vt198256@sis.hust.edu.vn", password: "X9)e=P_CE!Yw" })
-    if (res) {
-      const token = res.data.accessToken;
-      localStorage.setItem("token", token);
-    }
-  }
-  useEffect(() => {
-    login()
-  }, [])
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getAllUserByPosition("STUDENT");
+        const data = await getAllUserByPosition(`STUDENT&semester=${semester}`);
         setData(data);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching student data:', error);
       }
@@ -169,11 +168,16 @@ export const ListStudent = () => {
 
         // Create table data
         const tableData = rows.map((row, index) => ({
-          key: index,
+
           ...row.reduce((acc, value, colIndex) => {
             acc[headers[colIndex]] = value;
             return acc;
           }, {}),
+          roles: ['S'],
+          position: "STUDENT",
+          is_active: true,
+          password: "1",
+          semester: `${semester}`
         }));
 
         setTableDataExcel(tableData);
@@ -221,12 +225,12 @@ export const ListStudent = () => {
     },
     {
       title: 'Khóa',
-      dataIndex: 'khoa',
-      key: 'khoa'
+      dataIndex: 'gen',
+      key: 'gen'
     },
     {
       title: 'Trường/Viện',
-      dataIndex: 'School',
+      dataIndex: 'school',
       key: 'school'
     },
     {
@@ -247,17 +251,18 @@ export const ListStudent = () => {
       render: (_, record) => (<div className='action-button' size="middle">
         <Button className='button-view' onClick={() => handleView(record)} shape="circle" icon={<EyeOutlined />}> </Button>
         <Button className='button-fix' onClick={() => handleUpdate(record)} shape="circle" icon={<FormOutlined />}> </Button>
-        <Button className='button-delete' shape="circle" icon={<DeleteOutlined />}> </Button>
+        <Button className='button-delete' onClick={() => showDeleteConfirm(record)} shape="circle" icon={<DeleteOutlined />}> </Button>
       </div>
       ),
     },
   ];
-
+  //console.log(tableDataExcel) 
   const handleView = async (record) => {
     try {
       const userData = await getUserById(record.id);
       setId(record.id)
       setDataStudent(userData);
+      console.log(userData)
       setModalView(true);
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -275,35 +280,72 @@ export const ListStudent = () => {
     }
   }
 
+  const handleDelete = async (id) => {
+    try {
+      const body = { is_active: false }
+      console.log(id, body)
+      const res = await deleteUserById(id, body)
+      const data = await getAllUserByPosition(`STUDENT&semester=${semester}`);
+      setData(data);
+      console.log(data)
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  }
+  const showDeleteConfirm = async (record) => {
+    setId(record.id);
+    confirm({
+      title: 'Bạn có muốn xóa người dùng này?',
+      icon: <ExclamationCircleFilled />,
+      content: '',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        console.log('OK');
+        handleDelete(record.id);
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  };
+
   useEffect(() => {
     if (dataStudent) {
       detail.setFieldsValue(dataStudent);
       update.setFieldsValue(dataStudent);
-      const researchAreaNames = dataStudent.research_area.map(area => area.name);
-      detail.setFieldsValue({ research_area: researchAreaNames });
-      update.setFieldsValue({ research_area: researchAreaNames });
+      const researchAreas = dataStudent.research_area.map(area => area.number);
+      detail.setFieldsValue({ research_area: researchAreas });
+      update.setFieldsValue({ research_area: researchAreas });
     }
   }, [dataStudent, detail]);
 
   const handleOk = async () => {
-    try {
-      // Kiểm tra và lấy giá trị từ form
-      const values = await update.validateFields();
-      console.log(values)
-      // Gọi hàm cập nhật
-      //await updateUserById(id, values);
-      // Đóng modal sau khi cập nhật thành công
-      setModalUpdate(false);
-    } catch (error) {
-      console.error('Error updating user:', error);
-      // Xử lý lỗi nếu cần
-    }
+    // Kiểm tra và lấy giá trị từ form
+    const formValues = await update.validateFields();
+    const researchAreaArray = formValues.research_area.map(area => ({ number: area }));
+    console.log("Research Area Objects:", researchAreaArray);
+    // Tạo một đối tượng mới với các trường bổ sung
+    const additionalFields = {
+      research_area: researchAreaArray
+    };
+
+    // Kết hợp formValues và additionalFields
+    const values = { ...formValues, ...additionalFields };
+    const res = await updateUserById(id, values);
+    update.resetFields()
+    setModalUpdate(false)
+    const data = await getAllUserByPosition(`STUDENT&semester=${semester}`);
+    setData(data);
+    setLoading(false);
   };
 
   const handleCreate = async () => {
     try {
       // Kiểm tra và lấy giá trị từ form
       const formValues = await create.validateFields();
+      const researchAreaArray = formValues.research_area.map(area => ({ number: area }));
 
       // Tạo một đối tượng mới với các trường bổ sung
       const additionalFields = {
@@ -311,21 +353,68 @@ export const ListStudent = () => {
         position: "STUDENT",
         is_active: true,
         password: "1",
+        research_area: researchAreaArray,
+        semester: `${semester}`
       };
 
       // Kết hợp formValues và additionalFields
       const values = { ...formValues, ...additionalFields };
-
-      console.log(values);
-      // Gọi hàm cập nhật
-      //await createUser(values);
+      const res = await createUser(values);
       create.resetFields()
-      // Đóng modal sau khi cập nhật thành công
-      setModalUpdate(false);
+      setModal1Open(false)
+      const data = await getAllUserByPosition(`STUDENT&semester=${semester}`);
+      setData(data);
+      setLoading(false);
     } catch (error) {
       console.error('Error updating user:', error);
-      // Xử lý lỗi nếu cần
     }
+  };
+
+  const handleCreateUserByFile = async () => {
+    const body = tableDataExcel
+    const res = await createUserByFile(body);
+    setModalExcel(false)
+    setModal2Open(false)
+    const data = await getAllUserByPosition(`STUDENT&semester=${semester}`);
+    setData(data);
+  }
+
+  const onSearch = (value) => {
+    const normalizedValue = unorm.nfd(value); // Chuẩn hóa văn bản đầu vào
+    const filterData = data.filter((o) =>
+    Object.keys(o).some((k) => {
+      // Nếu giá trị của thuộc tính là mảng đối tượng
+      if (Array.isArray(o[k])) {
+        return o[k].some((nestedObj) =>
+          Object.values(nestedObj).some((nestedValue) =>
+            unorm.nfd(String(nestedValue)).toLowerCase().includes(normalizedValue.toLowerCase())
+          )
+        );
+      }
+      // Nếu giá trị của thuộc tính không phải là mảng đối tượng
+      return unorm.nfd(String(o[k])).toLowerCase().includes(normalizedValue.toLowerCase());
+    })
+  );
+    setData(filterData);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (value.trim() === '') {
+        // Fetch all users with the position "STUDENT"
+        const newData = await getAllUserByPosition(`STUDENT&semester=${semester}`);
+        setData(newData);
+      }
+    };
+
+    fetchData();
+    setPage(1);
+  }, [value]);
+
+  const handleSemesterChange = async (selectedSemester) => {
+    setSemester(selectedSemester);
+    const data = await getAllUserByPosition(`STUDENT&semester=${selectedSemester}`);
+    setData(data);
   };
 
   return (
@@ -354,16 +443,19 @@ export const ListStudent = () => {
             <Form.Item label="Họ và tên" name="fullname" fieldId='fullname'>
               <Input />
             </Form.Item>
-            <Form.Item label="CCCD" name="CCCD">
+            <Form.Item label="CCCD" name="cccd">
               <Input />
             </Form.Item>
             <Form.Item label="Mã số sinh viên" name="number">
               <Input />
             </Form.Item>
-            <Form.Item label="Khóa" name="khoa">
+            <Form.Item label="Khóa" name="gen">
               <Input />
             </Form.Item>
             <Form.Item label="Lớp" name="class">
+              <Input />
+            </Form.Item>
+            <Form.Item label="Email" name="email">
               <Input />
             </Form.Item>
             <Form.Item label="Trường/Viện:" name="school">
@@ -416,7 +508,7 @@ export const ListStudent = () => {
           open={modalExcel}
           cancelText="Từ chối"
           onCancel={() => setModalExcel(false)}
-          onOk={() => setModalExcel(false)}
+          onOk={handleCreateUserByFile}
         >
           <Table className='table-list-student-excel'
             pagination={{
@@ -434,25 +526,20 @@ export const ListStudent = () => {
 
         <div className='select-semester'>
           <span style={{ color: "black" }} >Kỳ học: </span>
-          <Select defaultValue="20231" options={optionYear} style={{ width: 120 }} >
+          <Select defaultValue="20231" 
+          onChange={handleSemesterChange}
+          options={optionYear}
+          style={{ width: 120 }} >
 
           </Select>
         </div>
 
-        <Search
+        <Input.Search
           className="input-search"
-          placeholder="Search Name"
+          placeholder="Tìm kiếm theo tên"
           value={value}
-          // onChange={e => {
-          //   const currValue = e.target.value;
-          //   setValue(currValue);
-          //   const filteredData = data.filter((entry) =>
-          //     entry && entry.name && entry.name.includes(currValue)
-          //   );
-          //   setData(filteredData);
-          // }}
-          placeholder="Tìm kiếm"
           onSearch={onSearch}
+          onChange={(e) => setValue(e.target.value)}
           style={{
             width: 500,
             paddingLeft: 10,
@@ -473,6 +560,7 @@ export const ListStudent = () => {
           }}
           columns={columns}
           dataSource={dataTable}
+          loading={loading}
         />
       </div>
 
@@ -490,13 +578,13 @@ export const ListStudent = () => {
           <Form.Item label="Họ và tên" name="fullname" fieldId='fullname'>
             <Input readOnly />
           </Form.Item>
-          <Form.Item label="CCCD" name="CCCD">
+          <Form.Item label="CCCD" name="cccd">
             <Input readOnly />
           </Form.Item>
           <Form.Item label="Mã số sinh viên" name="number">
             <Input readOnly />
           </Form.Item>
-          <Form.Item label="Khóa" name="khoa">
+          <Form.Item label="Khóa" name="gen">
             <Input readOnly />
           </Form.Item>
           <Form.Item label="Lớp" name="class">
@@ -522,23 +610,21 @@ export const ListStudent = () => {
         centered
         open={modalUpdate}
         okText="OK"
-
         onOk={handleOk}
         onCancel={() => setModalUpdate(false)}
         cancelText="Cancle"
       >
-        <Form layout="vertical"
-          form={update}>
+        <Form form={update} layout="vertical">
           <Form.Item label="Họ và tên" name="fullname" fieldId='fullname'>
             <Input />
           </Form.Item>
-          <Form.Item label="CCCD" name="CCCD">
+          <Form.Item label="CCCD" name="cccd">
             <Input />
           </Form.Item>
           <Form.Item label="Mã số sinh viên" name="number">
             <Input />
           </Form.Item>
-          <Form.Item label="Khóa" name="khoa">
+          <Form.Item label="Khóa" name="gen">
             <Input />
           </Form.Item>
           <Form.Item label="Lớp" name="class">
@@ -552,14 +638,12 @@ export const ListStudent = () => {
             </Select>
           </Form.Item>
           <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area">
-            <Select mode='multiple' options={dataSelect}>
+            <Select mode='multiple' labelInValue optionLabelProp="label" options={dataSelect}>
 
             </Select>
           </Form.Item>
         </Form>
       </Modal>
-
-
     </div >
   )
 }

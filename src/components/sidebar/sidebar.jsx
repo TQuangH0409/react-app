@@ -52,8 +52,7 @@ const Sidebar = ({ user }) => {
 
 
       {/*student */}
-      {
-          /* {user.isStudent} &&*/ <Menu>
+      {/* {user.isStudent} && <Menu>
           <Menu.Item key="student-information">
             Thông tin cá nhân
             <Link to="/student"></Link>
@@ -70,7 +69,7 @@ const Sidebar = ({ user }) => {
       {/*teacher */}
 
       {/* {user.isTeacher} && */}
-      <Menu>
+      {/*<Menu>
                     <Menu.Item key="student-information">
                         Thông tin cá nhân
                         <Link to="/info-teacher"></Link>
@@ -95,7 +94,7 @@ const Sidebar = ({ user }) => {
                     </Menu.Item>
                     <hr className="sidebar-divider my-0"></hr>
                     
-                </Menu>
+                </Menu> */}
     </div>
   );
 };

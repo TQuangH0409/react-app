@@ -1,14 +1,18 @@
 import React, { useState } from "react";
 import { Button, Input, Select, Space, Table } from "antd";
+import unorm from "unorm";
 import { Option } from "antd/es/mentions";
 import { getAssReview } from "../../../apis/apiAss";
-import { getUserById } from "../../../apis/apiStudent";
+import { getUserById } from "../../../apis/apiAdmin";
 
 const AssignCriticism = () => {
   const [review, setReview] = useState([]);
   const [array, setArray] = useState([]);
   const [listTeacher, setListTeacher] = useState([]);
   const [limit, setLimit] = useState(0);
+  const [page, setPage] = useState(1);
+  const [paginationSize, setPaginationSize] = useState(10)
+  const [value, setValue] = useState('');
   const subTable = [];
 
   const expandedRowRenderFunc = (datas) => {
@@ -74,9 +78,9 @@ const AssignCriticism = () => {
   };
   const columns = [
     {
-      title: "STT",
-      dataIndex: "STT",
-      key: "STT",
+      title: 'STT',
+      key: 'index',
+      render: (text: string, record: any, index: number) => (page - 1) * paginationSize + index + 1,
     },
     {
       title: "Họ và tên",
@@ -96,6 +100,7 @@ const AssignCriticism = () => {
   ];
   const data = [];
   if (review.length > 0) {
+    console.log(review);
     let i = 0;
     for (const e of review) {
       const project = [];
@@ -131,7 +136,7 @@ const AssignCriticism = () => {
   return (
     <div className="list-student mb-4">
       <div className="content-header py-3">
-        <h6 className="m-0 font-weight-bold text-primary">
+        <h6 style={{ width: "180px" }} className="m-0 font-weight-bold text-primary">
           Danh sách phân công giáo viên phản biện
         </h6>
 
@@ -142,18 +147,19 @@ const AssignCriticism = () => {
           </Select>
         </div>
 
-        <Space.Compact size="large" style={{ marginLeft: "20px" }}>
-          <Input
-            addonBefore="số lượng đồ án/giảng viên"
-            placeholder="number"
-            onChange={(e) => {
-              setLimit(e.target.value);
-            }}
-          />
-        </Space.Compact>
+        <div className="select-number-ofStudent">
+        <span style={{ color: "black", marginLeft: "10px" }}>Số lượng sinh viên/giảng viên: </span>
+            <Input
+              style={{ width: 120 }}
+              placeholder="Number"
+              onChange={(e) => {
+                setLimit(e.target.value);
+              }}
+            />
+        </div>
 
         <div>
-          <Button
+          <Button style={{ margin: "0 5px 0 5px" }}
             type="primary"
             onClick={async () => {
               const res = await getAssReview(limit, "DRAFT");
@@ -169,7 +175,7 @@ const AssignCriticism = () => {
 
         <div>
           <Button
-            type="primary"
+            type="primary" style={{ margin: "0" }}
             onClick={async () => {
               const res = await getAssReview(limit, "SAVE");
               setReview(res.assignment);
@@ -178,6 +184,18 @@ const AssignCriticism = () => {
             Lưu
           </Button>
         </div>
+
+        <Input.Search
+          className="input-search"
+          placeholder="Tìm kiếm theo tên"
+          value={value}
+        
+          onChange={(e) => setValue(e.target.value)}
+          style={{
+            width: 300,
+            paddingLeft: 10,
+          }}
+        />
       </div>
 
       <div className="content-main">

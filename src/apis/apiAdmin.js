@@ -1,4 +1,3 @@
-import { getData, putData, postData } from "../api/apiData";
 import axiosData from "./axiosData";
 
 const optionYear = [
@@ -61,65 +60,23 @@ const optionSchool = [
 ]
 
 const getUserById = async (id) => {
-  try {
     const response = await axiosData().get(`/users/${id}`);
-    if (!response.ok) {
-      // Xử lý lỗi nếu có
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Update user failed');
-    }
+    console.log('User updated successfully:', response.data);
+    return response.data;
 
-    // Xử lý thành công nếu cần
-    const updatedUserData = await response.json();
-    console.log('User updated successfully:', updatedUserData);
-
-    // Trả về dữ liệu sau khi cập nhật (nếu cần)
-    return updatedUserData;
-  } catch (error) {
-    console.error(error);
-    throw error; // Re-throw the error to handle it where the function is called
-  }
 };
 
 const updateUserById = async (id, body) => {
   const res = await axiosData().put(`/users/${id}`, body)
-
-  try {
-    const response = await axiosData().put(`/users/${id}`, body)
-    if (!response.ok) {
-      // Xử lý lỗi nếu có
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Update user failed');
-    }
-
-    // Xử lý thành công nếu cần
-    const updatedUserData = await response.json();
-    console.log('User updated successfully:', updatedUserData);
-
-    // Trả về dữ liệu sau khi cập nhật (nếu cần)
-    return updatedUserData;
-  } catch (error) {
-    console.error(error);
-    throw error; // Re-throw the error to handle it where the function is called
-  }
+    console.log('User updated successfully:', res);
+    return res.data;
 };
 
 const deleteUserById = async (id,body) => {
-  try {
     const response = await axiosData().put(`/users/${id}`, body)
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Delete user failed');
-    }
+    console.log('User delete successfully:', response);
 
-    const updatedUserData = await response.json();
-    console.log('User delete successfully:', updatedUserData);
-
-    return updatedUserData;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+    return response.data;
 };
 
 const getAllUserByPosition = async (position) => {
@@ -152,21 +109,45 @@ const getAllResearchArea = async () => {
   return allData;
 };
 
-const createUser = async (valueUser) => {
-  try {
-    const response = await axiosData().post(`/users`)
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'create user failed');
-    }
-    const userData = await response.json();
-    console.log('User created successfully:', userData);
+const createUser = async (body) => {
+    const res = await axiosData().post(`/users`, body)
+    console.log('User created successfully:', res.data);
+    return  res.data;
 
-    return userData;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
 };
 
-export { getAllUserByPosition, getUserById, getAllResearchArea, optionYear, optionSchool, updateUserById, createUser, deleteUserById }
+const createResearchArea = async (body) => {
+    const res = await axiosData().post(`/research-areas`, body)
+    console.log('research area created successfully:', res.data);
+    return res.data
+}
+
+const deleteResearchArea = async (id) => {
+  const res = await axiosData().delete(`/research-areas/${id}`)
+  console.log('research area created successfully:', res.data);
+  return res.data
+}
+
+const updateResearchArea = async (id, body) => {
+  const res = await axiosData().put(`/research-areas/${id}`, body)
+  console.log('research area created successfully:', res.data);
+  return res.data
+}
+
+const getResearchAreaById = async (id) => {
+  const res = await axiosData().get(`/research-areas/${id}`)
+  console.log('research area created successfully:', res.data);
+  return res.data
+}
+
+const createUserByFile = async (body) => {
+  const res = await axiosData().post(`/users/import`,body)
+  console.log('research area created successfully:', res.data);
+  return res.data
+}
+
+export { getAllUserByPosition, getUserById, getAllResearchArea, 
+  optionYear, optionSchool, updateUserById, 
+  createUser, deleteUserById, createResearchArea,
+  deleteResearchArea, updateResearchArea, getResearchAreaById,
+ createUserByFile}
