@@ -10943,9 +10943,13 @@ a:focus {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
 }
-.ant-table-content {
+/* .ant-table-content {
   max-height: 705px !important;
   overflow-y: scroll;
+} */
+.ant-table-thead tr{
+  /* position: fixed !important;
+  z-index: 9999; */
 }
 /* width */
 ::-webkit-scrollbar {

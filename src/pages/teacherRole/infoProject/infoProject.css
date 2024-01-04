@@ -1,0 +1,103 @@
+.container_project {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #fff;
+  color: #000;
+  font-size: 13px;
+}
+.container_project--info {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px;
+}
+.container_project--top {
+  display: flex;
+  margin-bottom: 10px;
+}
+.container_project--info h6 {
+  font-weight: 700;
+  line-height: 30px;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+}
+.container_project--topLeft {
+  flex: 1;
+
+  grid-template-rows: 43% 57%;
+}
+.container_project--topLeft {
+}
+.infoStudent {
+  display: grid;
+  height: calc(100% - 39px);
+  grid-template-columns: 35% 65%;
+  padding: 0 0 0 10px;
+  font-size: 14px;
+}
+.infoTeacher {
+  display: grid;
+  height: calc(100% - 40px);
+  grid-template-columns: 35% 65%;
+  padding: 0 0 0 10px;
+  font-size: 14px;
+
+}
+
+.infoStudent-inner {
+  display: grid;
+  grid-template-columns: 35% 65%;
+}
+.infoProject-inner {
+  display: grid;
+  grid-template-columns: 35% 65%;
+}
+.infoProject-inner p {
+  font-weight: 500;
+}
+.infoTeacher-inner {
+  display: grid;
+  grid-template-columns: 35% 65%;
+}
+.container_project--topLeftBottom {
+}
+.container_project--topRight {
+  flex: 1;
+  padding-left: 10px;
+}
+.container_project--bottom {
+}
+.container_project--middle {
+  margin: 10px 0;
+}
+.container_project--middle-content {
+  padding-left: 10px;
+  font-size: 14px;
+
+}
+.container_project--middle-content strong{
+  margin-bottom: 16px;
+}
+.infoTeacher-inner_researhch-area {
+  display: grid;
+  grid-template-columns: 65% 35%;
+
+
+}
+.container_project--footer {
+  display: flex;
+}
+.project_exchange {
+  flex: 1;
+}
+.project_evaluate {
+  flex: 1;
+  padding-left: 10px;
+}
+.ant-input-number{
+  width: 100%;
+  margin-top: 30px;
+}
+.project_evaluate-content{
+  font-size: 14px;
+}

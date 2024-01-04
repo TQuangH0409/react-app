@@ -14,6 +14,7 @@ const Sidebar = ({ user }) => {
           />
         </div>
       </Link>
+      <hr className="sidebar-divider my-0"></hr>
 
       <hr className="sidebar-divider my-0"></hr>
 
@@ -26,17 +27,17 @@ const Sidebar = ({ user }) => {
         </Menu.Item>
         <hr className="sidebar-divider my-0"></hr>
 
-        <Menu.Item key="list-teacher">
-          Danh sách giảng viên
-          <Link to="/admin/list-teacher"></Link>
-        </Menu.Item>
-        <hr className="sidebar-divider my-0"></hr>
+          <Menu.Item key="list-teacher">
+            Danh sách giảng viên
+            <Link to="/admin/list-teacher"></Link>
+          </Menu.Item>
+          <hr className="sidebar-divider my-0"></hr>
 
-        <Menu.Item key="field-of-study">
-          Lĩnh vực nghiên cứu
-          <Link to="/admin/list-field-of-study"></Link>
-        </Menu.Item>
-        <hr className="sidebar-divider my-0"></hr>
+          <Menu.Item key="field-of-study">
+            Lĩnh vực nghiên cứu
+            <Link to="/admin/list-field-of-study"></Link>
+          </Menu.Item>
+          <hr className="sidebar-divider my-0"></hr>
 
         <Menu.Item key="assigned-instructions">
           Phân công hướng dẫn
@@ -52,8 +53,15 @@ const Sidebar = ({ user }) => {
       </Menu>}
 
 
+          <Menu.Item key="assign-criticism">
+            Phân công phản biện
+            <Link to="/admin/assign-criticism"></Link>
+          </Menu.Item>
+          <hr className="sidebar-divider my-0"></hr>
+        </Menu>
+      )}
       {/*student */}
-      {localStorage.getItem("roles") === "S" && (
+      {localStorage.getItem("roles")[0] === "S" && (
         <Menu>
           <Menu.Item key="student-information">
             Thông tin cá nhân
@@ -69,34 +77,28 @@ const Sidebar = ({ user }) => {
         </Menu>
       )}
       {/*teacher */}
-
       {/* {user.isTeacher} && */}
-      {/*<Menu>
-                    <Menu.Item key="student-information">
-                        Thông tin cá nhân
-                        <Link to="/info-teacher"></Link>
-                    </Menu.Item>
+      {localStorage.getItem("roles")[0] === "T" && (
+        <Menu>
+          <Menu.Item key="student-information">
+            Thông tin cá nhân
+            <Link to="/info-teacher"></Link>
+          </Menu.Item>
 
-                    <hr className="sidebar-divider my-0"></hr>
-                    <Menu.Item key="list-project">
-                        Danh sách đồ án
-                        <Link to="/teacher/list-project"></Link>
-                    </Menu.Item>
+          <hr className="sidebar-divider my-0"></hr>
+          <Menu.Item key="list-project">
+            Danh sách sinh viên được phân công hướng dẫn
+            <Link to="/teacher/list-project"></Link>
+          </Menu.Item>
 
-                    <hr className="sidebar-divider my-0"></hr>
-                    <Menu.Item key="list-review-project">
-                        Danh sách đồ án phản biện
-                        <Link to="/teacher/list-review-project"></Link>
-                    </Menu.Item>
-                    
-                    <hr className="sidebar-divider my-0"></hr>
-                    <Menu.Item key="list-assignment">
-                        Danh sách sinh viên được phân công hướng dẫn
-                        <Link to="/teacher/list-assignment"></Link>
-                    </Menu.Item>
-                    <hr className="sidebar-divider my-0"></hr>
-                    
-                </Menu> */}
+          <hr className="sidebar-divider my-0"></hr>
+          <Menu.Item key="list-review-project">
+            Danh sách đồ án phản biện
+            <Link to="/teacher/list-review-project"></Link>
+          </Menu.Item>
+          <hr className="sidebar-divider my-0"></hr>
+        </Menu>
+      )}
     </div>
   );
 };

@@ -9,8 +9,9 @@ export async function login(email, password) {
   if (!res) {
     alert("server has error");
   }
-
   localStorage.setItem("token", res.data.accessToken);
   localStorage.setItem("roles", res.data.roles[0]);
   localStorage.setItem("userId", res.data.id);
+  localStorage.setItem("fullname", res.data.fullname);
+
 }

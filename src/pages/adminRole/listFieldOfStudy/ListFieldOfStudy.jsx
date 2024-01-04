@@ -21,6 +21,7 @@ import {
   DeleteOutlined, FormOutlined, EyeOutlined,
   ExclamationCircleFilled
 } from '@ant-design/icons';
+import confirm from 'antd/es/modal/confirm';
 
 const { confirm } = Modal;
 const { Search } = Input;

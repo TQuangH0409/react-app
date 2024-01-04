@@ -5,12 +5,12 @@
 }
 
 .content{
-    width: 100vw;
-    height: 85vh;
+  height: calc(100% - 100px);
 }
 
 .ant-table{
     height: 70vh;
+    
     overflow-y: scroll;
 }
 
