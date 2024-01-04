@@ -196,7 +196,7 @@ const ListTeacher = () => {
     },
     {
       title: 'Cấp bậc',
-      dataIndex: 'class',
+      dataIndex: 'degree',
     },
     {
       title: 'Trường/Viện',
@@ -406,6 +406,9 @@ const ListTeacher = () => {
             <Form.Item label="CCCD" name="cccd">
               <Input />
             </Form.Item>
+            <Form.Item label="Bằng cấp" name="degree">
+              <Input />
+            </Form.Item>
             <Form.Item label="Mã số giảng viên" name="number">
               <Input />
             </Form.Item>
@@ -430,7 +433,7 @@ const ListTeacher = () => {
           Thêm mới excel
         </Button>
         <Modal
-          title="Thêm mới sinh viên"
+          title="Thêm mới giảng viên"
           centered
           open={modal2Open}
           cancelText="Từ chối"
@@ -522,6 +525,9 @@ const ListTeacher = () => {
           <Form.Item label="Mã số giảng viên" name="number">
             <Input readOnly />
           </Form.Item>
+          <Form.Item label="Bằng cấp" name="degree">
+            <Input readOnly />
+          </Form.Item>
           <Form.Item label="Email" name="email">
             <Input readOnly />
           </Form.Item>
@@ -556,6 +562,9 @@ const ListTeacher = () => {
             <Input />
           </Form.Item>
           <Form.Item label="Mã số giảng viên" name="number">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Bằng cấp" name="degree">
             <Input />
           </Form.Item>
           <Form.Item label="Email" name="email">

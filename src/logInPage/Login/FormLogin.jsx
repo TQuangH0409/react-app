@@ -60,12 +60,12 @@ function FormLogin({ errorLogin = false }) {
       // Save email and password to localStorage if "Remember Me" is checked
       await handleSaveLogin();
 
-      if (localStorage.getItem("roles")[0] === "SA") {
-        navigate("/student");
-      } else if (localStorage.getItem("roles")[0] === "T") {
+      if (localStorage.getItem("roles") === "SA") {
+        navigate("/admin/list-student");
+      } else if (localStorage.getItem("roles") === "T") {
         navigate("/info-teacher");
       } else {
-        navigate("/info-teacher");
+        navigate("/student");
       }
       // Reset the form fields after submission if needed
     } catch (error) {

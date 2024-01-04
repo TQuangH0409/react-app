@@ -12,6 +12,7 @@ const AssignedInstruction = () => {
   const [page, setPage] = useState(1);
   const [paginationSize, setPaginationSize] = useState(10)
   const [value, setValue] = useState('');
+  const [semester, setSemester] = useState('20231');
   const subTable = [];
 
   const expandedRowRenderFunc = (datas) => {
