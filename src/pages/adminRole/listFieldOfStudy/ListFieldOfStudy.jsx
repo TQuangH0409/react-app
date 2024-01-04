@@ -55,16 +55,16 @@ const ListFieldOfStudy = () => {
     fetchData();
   }, []);
 
-  const columns: ColumnsType<DataType> = [
+  const columns = [
     {
       title: 'STT',
       key: 'index',
-      render: (text: string, record: any, index: number) => (page - 1) * paginationSize + index + 1,
+      render: (text, record, index) => (page - 1) * paginationSize + index + 1,
     },
     {
       title: 'Tên hiển thị',
       dataIndex: 'name',
-      render: (text: string) => <a>{text}</a>,
+      render: (text) => <a>{text}</a>,
     },
     {
       title: 'Mã số',

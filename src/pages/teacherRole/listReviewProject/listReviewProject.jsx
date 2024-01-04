@@ -8,17 +8,6 @@ import { getAllProjectReview } from "../../../apis/apiTeacher";
 const { Search } = Input;
 const onSearch = (value, _e, info) => console.log(info?.source, value);
 export const ListReviewProject = () => {
-  // const data = [
-  //   {
-  //     topic_name: "Project III",
-  //     mark: "10/10",
-  //     student_name: "Nguyễn Trường Việt",
-  //     student_id: "20198273",
-  //     teacher_argument: "Nguyễn Đăng Hải",
-  //     createDate: "25-12-2023",
-  //     peopleCreate: "Nguyễn Trường Việt",
-  //   },
-  // ];
   const [page, setPage] = useState(1);
   const [paginationSize, setPaginationSize] = useState(10);
 
@@ -41,9 +30,6 @@ export const ListReviewProject = () => {
           setDataAll(data)
           setDataTable(data.projects);
           setDataTableFake(data.projects);
-
-          // setDataFake(data.students);
-          // setTeacher(data);
           setLoading(false);
         } catch (error) {
           console.error("Error fetching student data:", error);

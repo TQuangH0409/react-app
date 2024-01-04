@@ -2,12 +2,8 @@ import React, { useEffect } from "react";
 import { useState } from "react";
 import { Button, Input, Table } from "antd";
 import "../../adminRole/globalCSS.css";
-import { EyeOutlined, FormOutlined } from "@ant-design/icons";
-
-// import getData from "../api/apiData.js";
-import axios from "axios";
+import { EyeOutlined } from "@ant-design/icons";
 import { getAllProject } from "../../../apis/apiTeacher";
-import unorm from "unorm";
 import { Link } from "react-router-dom";
 const { Search } = Input;
 
@@ -33,7 +29,6 @@ export const ListProject = () => {
         });
         console.log(filteredData);
         setDataTable(filteredData);
-        // setDataTable(filteredData);
       } else {
         setDataTable(dataFake);
       }
@@ -41,14 +36,12 @@ export const ListProject = () => {
       console.log(123);
 
       if (!isNaN(currentValue)) {
-        // Check if it's a valid number
         const filteredData = dataFake.filter((entry) =>
           entry.number.toString().includes(currentValue.toString())
         );
         setDataTable(filteredData);
       } else {
         console.log("Invalid number");
-        // Handle the case where currentValue is not a valid number
       }
     }
   };
@@ -69,19 +62,6 @@ export const ListProject = () => {
     };
     fetchData();
   }, []);
-
-  // useEffect(() => {
-  //   const formatDate = async (date) => {
-  //     let dateObj = new Date(date);
-
-  //     const year = dateObj.getFullYear();
-  //     const month = (dateObj.getMonth() + 1).toString().padStart(2, "0"); // Month is zero-based
-  //     const day = dateObj.getDate().toString().padStart(2, "0");
-
-  //     const formattedDate = `${day}-${month}-${year}`;
-  //     return formattedDate;
-  //   };
-  // }, []);
 
   const columns = [
     {
@@ -118,7 +98,7 @@ export const ListProject = () => {
         let dateObj = new Date(dataAll.created_time);
 
         const year = dateObj.getFullYear();
-        const month = (dateObj.getMonth() + 1).toString().padStart(2, "0"); // Month is zero-based
+        const month = (dateObj.getMonth() + 1).toString().padStart(2, "0"); 
         const day = dateObj.getDate().toString().padStart(2, "0");
 
         const formattedDate = `${day}-${month}-${year}`;

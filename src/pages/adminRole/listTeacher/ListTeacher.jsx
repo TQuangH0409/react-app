@@ -181,12 +181,12 @@ const ListTeacher = () => {
     {
       title: 'STT',
       key: 'index',
-      render: (text: string, record: any, index: number) => (page - 1) * paginationSize + index + 1,
+      render: (text, record, index) => (page - 1) * paginationSize + index + 1,
     },
     {
       title: 'Tên hiển thị',
       dataIndex: 'fullname',
-      render: (text: string) => <a>{text}</a>,
+      render: (text) => <a>{text}</a>,
       key: 'fullname'
     },
     {

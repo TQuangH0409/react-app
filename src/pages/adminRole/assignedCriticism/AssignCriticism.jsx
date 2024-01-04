@@ -76,7 +76,7 @@ const AssignCriticism = () => {
     {
       title: 'STT',
       key: 'index',
-      render: (text: string, record: any, index: number) => (page - 1) * paginationSize + index + 1,
+      render: (text, record, index) => (page - 1) * paginationSize + index + 1,
     },
     {
       title: "Họ và tên",

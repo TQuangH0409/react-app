@@ -68,19 +68,6 @@ export default function InfoProject() {
     fetchData();
   }, []);
 
-  // useEffect(() => {
-  //   const getProject = async () => {
-  //     try {
-  //       const project = await getInfoProject(dataProject.project?.id);
-  //       setDataProject(project);
-  //     } catch (error) {
-  //       setIsProject(false);
-  //       console.error("Error fetching student data:", error);
-  //     }
-  //   };
-  //   getProject();
-  // }, []);
-
   const handleChangeNameProject = (e) => {
     setNameProject(e.target.value);
   };
