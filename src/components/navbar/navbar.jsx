@@ -1,29 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Dropdown, Space } from "antd";
 import "./navbar.css";
-import { useNavigate } from "react-router";
+import { Link } from "react-router-dom";
+import { getTeacherById } from "../../apis/apiTeacher";
 
 const Navbar = () => {
-  const navigate = useNavigate();
-  const handleLogout = () => {
-    // Xóa token khỏi localStorage
-    localStorage.removeItem("token");
-    localStorage.removeItem("roles");
-    localStorage.removeItem("userId");
+  const [teacherName, setTeacherName] = useState("");
+
+  useEffect(() => {
+    setTeacherName(localStorage.getItem("fullname"));
+    console.log(teacherName);
+  }, [localStorage.getItem("fullname")]);
+
+  const handleLogOut = () => {
     localStorage.removeItem("fullname");
-
-
-    // Chuyển hướng đến trang đăng nhập hoặc trang chính
-    navigate("/login");
+    localStorage.removeItem("roles");
+    localStorage.removeItem("token");
   };
-
   const items = [
     {
       key: "1",
       label: (
-        <a rel="noopener noreferrer" onClick={handleLogout}>
+        <Link to={"/login"} rel="noopener noreferrer" onClick={handleLogOut}>
           Thoát đăng nhập
-        </a>
+        </Link>
       ),
     },
   ];
@@ -40,7 +40,7 @@ const Navbar = () => {
             <a onClick={(e) => e.preventDefault()}>
               <Space>
                 <span className="mr-2 d-none d-lg-inline text-gray-600 small">
-                  {localStorage.getItem("fullname")}
+                  {teacherName}
                 </span>
                 <img
                   className="img-profile rounded-circle"

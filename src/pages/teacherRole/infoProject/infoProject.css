@@ -4,7 +4,6 @@
   height: 100%;
   background-color: #fff;
   color: #000;
-  font-size: 13px;
 }
 .container_project--info {
   display: flex;
@@ -92,7 +91,6 @@
 }
 .project_evaluate {
   flex: 1;
-  padding-left: 10px;
 }
 .ant-input-number{
   width: 100%;
@@ -100,4 +98,18 @@
 }
 .project_evaluate-content{
   font-size: 14px;
+  padding-left: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+
 }
+.ant-input-number{
+  height: 38px;
+  margin: 0;
+}
+textarea {
+  flex: 3;
+}
+

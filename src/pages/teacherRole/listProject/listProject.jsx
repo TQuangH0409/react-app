@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { Button, Input, Table } from "antd";
+import { Button, Input, Select, Table } from "antd";
 import "../../adminRole/globalCSS.css";
 import { EyeOutlined, FormOutlined } from "@ant-design/icons";
 
@@ -9,6 +9,7 @@ import axios from "axios";
 import { getAllProject } from "../../../apis/apiTeacher";
 import unorm from "unorm";
 import { Link } from "react-router-dom";
+import { optionYear } from "../../../apis/apiAdmin";
 const { Search } = Input;
 
 export const ListProject = () => {
@@ -54,18 +55,16 @@ export const ListProject = () => {
   };
   useEffect(() => {
     const fetchData = async () => {
-      setTimeout(async () => {
-        try {
-          const data = await getAllProject(localStorage.getItem("userId"));
-          setDataAll(data);
-          setDataTable(data.students);
-          setDataFake(data.students);
-          setDataTeacher(data.teacher);
-          setLoading(false);
-        } catch (error) {
-          console.error("Error fetching student data:", error);
-        }
-      }, 1000);
+      try {
+        const data = await getAllProject(localStorage.getItem("userId"));
+        setDataAll(data);
+        setDataTable(data.students);
+        setDataFake(data.students);
+        setDataTeacher(data.teacher);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching student data:", error);
+      }
     };
     fetchData();
   }, []);
@@ -108,7 +107,7 @@ export const ListProject = () => {
       key: "index",
 
       render: (text, record, index) => {
-        return (text = "Nguyễn Trường Việt");
+        // return (text = "Nguyễn Trường Việt");
         return (text = dataTeacher.fullname);
       },
     },
@@ -137,12 +136,22 @@ export const ListProject = () => {
               className="button-view"
               shape="circle"
               icon={<EyeOutlined />}
-            >{""}</Button>
+            >
+              {""}
+            </Button>
           </Link>
         </div>
       ),
     },
   ];
+
+  const [semester, setSemester] = useState('20231');
+
+  // const handleSemesterChange = async (selectedSemester) => {
+  //   setSemester(selectedSemester);
+  //   const data = await getAllUserByPosition(`STUDENT&semester=${selectedSemester}`);
+  //   setDataAll(data);
+  // };
 
   return (
     <div className="list-student mb-4">
@@ -169,6 +178,15 @@ export const ListProject = () => {
             paddingLeft: 10,
           }}
         />
+        <div className='select-semester'>
+          <span style={{ color: "black" }} >Kỳ học: </span>
+          <Select defaultValue="20231" 
+          // onChange={handleSemesterChange}
+          options={optionYear}
+          style={{ width: 120 }} >
+
+          </Select>
+        </div>
       </div>
 
       <div className="content-main">

@@ -1,8 +1,12 @@
-.login-container{
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.login-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url("../../assets/images/backgroundLogin.jpg");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  user-select: none;
 }
 .v-formLogin-container {
   background-color: #fff;

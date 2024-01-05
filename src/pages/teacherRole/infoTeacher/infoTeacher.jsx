@@ -1,21 +1,60 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
 import "./infoTeacher.css";
-import { FormOutlined } from "@ant-design/icons";
-import { Button, Form, Image, Input, InputNumber, Modal, Select } from "antd";
-import { getTeacherById, putInfoTeacher } from "../../../apis/apiTeacher";
+import { FormOutlined, LoadingOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Form,
+  Image,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Upload,
+  message,
+} from "antd";
+import {
+  downFileReport,
+  getResearchAreas,
+  getTeacherById,
+  postFile,
+  putInfoTeacher,
+} from "../../../apis/apiTeacher";
 export default function InfoTeacher() {
+  const [avatar, setAvatar] = useState("");
   const [teacherInfo, setTeacherInfo] = useState({});
   const [teacherName, setTeacherName] = useState("");
   const [teacherId, setTeacherId] = useState("");
   const [teacherEmail, setTeacherEmail] = useState("");
   const [teacherRank, setTeacherRank] = useState("");
   const [teacherSchool, setTeacherSchool] = useState("Trường CNTT&TT");
+  const [teacherResearchArea, setTeacherResearchArea] = useState([]);
+  const [isReload, setIsReload] = useState(true);
   const [researchArea, setResearchArea] = useState([]);
+  const [experience, setExperience] = useState(1);
 
-  const handleSchoolChange = (value) => {
-    const updatedOptions = fetchResearchFieldOptions(value);
-    setResearchArea(updatedOptions);
+  // const handleSchoolChange = async (value) => {
+  //   setTeacherSchool(value);
+  //   // const updatedOptions = await fetchResearchFieldOptions(value);
+  //   setResearchArea(updatedOptions);
+  // };
+
+  const handleResearchAreaChange = (selectedValues, valueSelected) => {
+    try {
+      // Update the selected research areas when the selection changes
+      setTeacherResearchArea(
+        selectedValues.map((value, index) => {
+          // console.log(value, valueSelected.number);
+          return {
+            name: value,
+            number: valueSelected[index].number,
+            experience: experience,
+          };
+        })
+      );
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -27,88 +66,93 @@ export default function InfoTeacher() {
         setTeacherId(data.number);
         setTeacherEmail(data.email);
         setTeacherRank("Tiến sĩ");
+        setTeacherResearchArea(data.research_area);
       } catch (error) {
         console.error("Error fetching student data:", error);
       }
     };
     fetchData();
-  }, []);
+  }, [isReload]);
 
-  const fetchResearchFieldOptions = (school) => {
-    if (school === "School1") {
-      return [
-        "Khoa học máy tính",
-        "Truyền thông dữ liệu và mạng máy tính​",
-        "Công nghệ phần mềm​",
-        "Kỹ thuật máy tính",
-        "Kỹ thuật mạng",
-        "Hệ thống quản lý thông tin",
-        "Robot và Trí tuệ nhân tạo",
-      ];
-    } else if (school === "School2") {
-      return [
-        "Kỹ thuật Điện – Điện tử",
-        "Kỹ thuật Điều khiển và Tự động hoá",
-        "Kỹ thuật Điện Tử – Viễn thông",
-      ];
-    } else if (school === "School3") {
-      return [
-        "Động học",
-        "Tĩnh học",
-        "Sức bền vật liệu, truyền nhiệt",
-        "Động lực dòng chảy",
-        "Cơ học vật rắn",
-        "Điều khiển học",
-        "Khí động học",
-        "Thủy lực",
-        "Chuyển động học và các ứng dụng nhiệt động lực học",
-      ];
-    } else if (school === "School4") {
-      return [
-        "Hóa học",
-        "Kỹ thuật hóa học",
-        "Kỹ thuật hóa dược",
-        "Kỹ thuật sinh học",
-        "Kỹ thuật thực phẩm",
-        "Kỹ thuật môi trường",
-        "Quản lý tài nguyên và môi trường",
-      ];
-    } else if (school === "School5") {
-      return [
-        "Cơ học biến dạng và Cán kim loại",
-        "Vật liệu và Công nghệ đúc",
-        "Luyện kim màu và Luyện kim bột",
-        "Vật liệu và Nhiệt luyện",
-        "Luyện kim đen",
-        "Vật liệu Polyme",
-        "Vật liệu màng mỏng",
-      ];
-    } else {
-      return [];
-    }
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const dataResearchAreas = await getResearchAreas();
+        setResearchArea(dataResearchAreas);
+      } catch (error) {
+        console.error("Error get research areas teacher:", error);
+      }
+    };
+    getData();
+  }, []);
+  const handleSchoolChange = (school) => {
+    setTeacherSchool(school);
   };
 
   const handleUpdateTeacher = async () => {
     try {
-      // Assuming you have teacherId and teacherData state variables
       const updatedTeacherData = await putInfoTeacher(teacherInfo.id, {
         ...teacherInfo,
         fullname: teacherName,
         number: teacherId,
         email: teacherEmail,
-        research_area: [...researchArea],
+        research_area: [...teacherResearchArea],
       });
-      console.log("Teacher updated:", updatedTeacherData);
-
-      // Close the modal after successful update
       setModal1Open(false);
+      setIsReload(!isReload);
+      localStorage.setItem("fullname" , teacherName)
     } catch (error) {
       console.error("Error updating teacher:", error);
-      // Handle the error (e.g., show an error message to the user)
+    }
+  };
+
+  useEffect(() => {
+    const reportFile = async () => {
+      try {
+        const reportLink = await downFileReport(localStorage.getItem("avatarId"));
+        setAvatar(reportLink.webContentLink);
+      } catch (error) {
+        console.error("Error fetching student data:", error);
+      }
+    };
+    reportFile();
+  }, [localStorage.getItem("avatarId")]);
+
+  const handleUpload = async ({ file, onSuccess, onError }) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await postFile(formData);
+      localStorage.setItem("avatarId", response.objectId);
+      message.success("Tải lên thành công");
+      onSuccess();
+    } catch (error) {
+      console.error("File upload error:", error);
+      onError();
     }
   };
 
   const [modal1Open, setModal1Open] = useState(false);
+
+  const [fileList, setFileList] = useState([]);
+
+  const onChange = ({ fileList: newFileList }) => {
+    setFileList(newFileList);
+  };
+  const onPreview = async (file) => {
+    let src = file.url;
+    if (!src) {
+      src = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj);
+        reader.onload = () => resolve(reader.result);
+      });
+    }
+    const image = new Image();
+    image.src = src;
+    const imgWindow = window.open(src);
+    imgWindow?.document.write(image.outerHTML);
+  };
 
   return (
     <div className="content__container">
@@ -132,6 +176,16 @@ export default function InfoTeacher() {
           onCancel={() => setModal1Open(false)}
         >
           <Form layout="vertical">
+            <Upload
+              action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
+              listType="picture-card"
+              fileList={fileList}
+              onChange={onChange}
+              onPreview={onPreview}
+              customRequest={handleUpload}
+            >
+              {fileList.length < 1 && "+ Upload"}
+            </Upload>
             <Form.Item label="Họ và tên">
               <Input
                 onChange={(e) => setTeacherName(e.target.value)}
@@ -163,7 +217,6 @@ export default function InfoTeacher() {
                 style={{ width: "100%" }}
                 onChange={handleSchoolChange}
               >
-                {/* Replace with your actual options for schools */}
                 <Select.Option value="School1">Trường CNTT&TT</Select.Option>
                 <Select.Option value="School2">
                   Trường Điện - điện tử
@@ -179,20 +232,24 @@ export default function InfoTeacher() {
             <Form.Item label="Lĩnh vực nghiên cứu">
               <Select
                 mode="multiple"
-                value={teacherInfo.research_area?.map(item => item.name)}
+                value={teacherResearchArea.map((item) => item.name)}
                 style={{ width: "100%" }}
-                options={researchArea.map((field) => ({
-                  value: field,
-                  label: field,
-                }))}
+                options={researchArea.map((field) => {
+                  return {
+                    value: field.name,
+                    label: field.name,
+                    number: field.number,
+                  };
+                })}
+                onChange={handleResearchAreaChange}
               />
             </Form.Item>
             <Form.Item label="Năm kinh nghiệm">
               <InputNumber
                 min={1}
                 max={20}
-                defaultValue={1}
-                onChange={console.log(123)}
+                value={experience}
+                onChange={(value) => setExperience(value)}
               />
             </Form.Item>
           </Form>
@@ -201,11 +258,7 @@ export default function InfoTeacher() {
 
       <div className="body">
         <div className="body_avatar">
-          <Image
-            width={"100%"}
-            height={"100%"}
-            src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"
-          />
+          <Image width={"100%"} height={"100%"} src={avatar} />
         </div>
         {
           <div className="body_content">

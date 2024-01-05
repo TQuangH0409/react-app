@@ -9,8 +9,6 @@ import { Checkbox } from "antd";
 function FormLogin({ errorLogin = false }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [falseLogin, setFalseLogin] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
   const navigate = useNavigate();
 
@@ -22,50 +20,16 @@ function FormLogin({ errorLogin = false }) {
     setPassword(event.target.value);
   };
 
-  useEffect(() => {
-    const rememberedEmail = localStorage.getItem("rememberedEmail");
-    const rememberedPassword = localStorage.getItem("rememberedPassword");
-
-    if (rememberedEmail && rememberedPassword) {
-      setEmail(rememberedEmail);
-      setPassword(rememberedPassword);
-      setRememberMe(true);
-    }
-  }, []);
-
-  const handleRememberMeChange = () => {
-    setRememberMe(!rememberMe);
-    console.log(rememberMe);
-  };
-
-  const handleSaveLogin = () => {
-    if (rememberMe) {
-      console.log(rememberMe + "123");
-
-      localStorage.setItem("rememberedEmail", email);
-      localStorage.setItem("rememberedPassword", password);
-    } else {
-      console.log(rememberMe + "456");
-      // Clear stored values if "Remember Me" is not checked
-      localStorage.removeItem("rememberedEmail");
-      localStorage.removeItem("rememberedPassword");
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await login(email, password);
-
-      // Save email and password to localStorage if "Remember Me" is checked
-      await handleSaveLogin();
-
-      if (localStorage.getItem("roles")[0] === "SA") {
-        navigate("/student");
-      } else if (localStorage.getItem("roles")[0] === "T") {
-        navigate("/info-teacher");
+      if (localStorage.getItem("roles") === "SA") {
+        navigate("/admin/list-student");
+      } else if (localStorage.getItem("roles") === "T") {
+        navigate("/teacher/info-teacher");
       } else {
-        navigate("/info-teacher");
+        navigate("/student");
       }
       // Reset the form fields after submission if needed
     } catch (error) {
@@ -86,7 +50,6 @@ function FormLogin({ errorLogin = false }) {
                 className="v-input"
                 placeholder="Email"
                 onChange={handleEmailChange}
-                // icon={icon}
               />
             </div>
 
@@ -98,14 +61,10 @@ function FormLogin({ errorLogin = false }) {
                 className="v-input"
                 placeholder="Password"
                 onChange={handlePasswordChange}
-                // icon={icon}
               />
             </div>
 
             <div style={{ marginTop: "20px" }}>
-              <Checkbox value={rememberMe} onChange={handleRememberMeChange}>
-                Ghi nhớ tài khoản mật khẩu
-              </Checkbox>
             </div>
             <div className="v-formLogin-footer">
               <Link to="/updatePassword">Đổi mật khẩu?</Link>

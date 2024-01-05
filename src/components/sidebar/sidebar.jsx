@@ -17,7 +17,7 @@ const Sidebar = ({ user }) => {
       <hr className="sidebar-divider my-0"></hr>
 
       {/*admin */}
-      {localStorage.getItem("roles")[0] === "SA" && (
+      {localStorage.getItem("roles") === "SA" && (
         <Menu mode="inline">
           <Menu.Item key="list-student">
             Danh sách sinh viên
@@ -51,7 +51,7 @@ const Sidebar = ({ user }) => {
         </Menu>
       )}
       {/*student */}
-      {localStorage.getItem("roles")[0] === "S" && (
+      {localStorage.getItem("roles") === "S" && (
         <Menu>
           <Menu.Item key="student-information">
             Thông tin cá nhân
@@ -67,12 +67,11 @@ const Sidebar = ({ user }) => {
         </Menu>
       )}
       {/*teacher */}
-      {/* {user.isTeacher} && */}
-      {localStorage.getItem("roles")[0] === "T" && (
+      {localStorage.getItem("roles") === "T" && (
         <Menu>
           <Menu.Item key="student-information">
             Thông tin cá nhân
-            <Link to="/info-teacher"></Link>
+            <Link to="/teacher/info-teacher"></Link>
           </Menu.Item>
 
           <hr className="sidebar-divider my-0"></hr>
