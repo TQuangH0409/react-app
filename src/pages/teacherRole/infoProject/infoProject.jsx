@@ -43,6 +43,8 @@ export default function InfoProject() {
   const [middleMark, setMiddleMark] = useState(null);
   const [finalMark, setFinalMark] = useState(null);
 
+  const [isReload , setIsReload] = useState(true)
+
   const student_id = window.location.pathname.slice(
     22,
     window.location.pathname.length
@@ -57,29 +59,26 @@ export default function InfoProject() {
         );
         setDataStudent(getStudentById[0]);
         setDataTeacher(data.teacher);
-        const proI = await getProjectByStudent(student_id);
-        const pro = await getProjectById(proI.id);
-        // const project = getInfoProject(getStudentById.project.id);
-        setDataProject(pro);
       } catch (error) {
         console.error("Error fetching student data:", error);
       }
     };
     fetchData();
-  }, []);
+  }, [isReload]);
 
-  // useEffect(() => {
-  //   const getProject = async () => {
-  //     try {
-  //       const project = await getInfoProject(dataProject.project?.id);
-  //       setDataProject(project);
-  //     } catch (error) {
-  //       setIsProject(false);
-  //       console.error("Error fetching student data:", error);
-  //     }
-  //   };
-  //   getProject();
-  // }, []);
+  useEffect(() => {
+    const getProject = async () => {
+      try {
+        const proI = await getProjectByStudent(student_id);
+        const pro = await getProjectById(proI.id);
+        setDataProject(pro);
+      } catch (error) {
+        setIsProject(false);
+        console.error("Error fetching student data:", error);
+      }
+    };
+    getProject();
+  }, []);
 
   const handleChangeNameProject = (e) => {
     setNameProject(e.target.value);
@@ -91,6 +90,7 @@ export default function InfoProject() {
         try {
           await putProject({ name: nameProject }, id);
           setModal1Open(false);
+          setIsReload(!isReload)
         } catch (error) {
           console.error("Error fetching student data:", error);
           setModal1Open(true);
@@ -113,6 +113,8 @@ export default function InfoProject() {
           };
           await postProject(data);
           setModal1Open(false);
+          setIsReload(!isReload)
+
         } catch (error) {
           console.error("Error fetching student data:", error);
           setModal1Open(true);
@@ -264,7 +266,7 @@ export default function InfoProject() {
         </div>
         <div className="container_project--middle">
           <h6>
-            Tạo đồ án{" "}
+            {isProject ? "Thông tin đồ án" : "Tạo đồ án"}
             <p style={{ "margin-bottom": "4px" }}>
               <Button
                 className="button-fix"
@@ -284,12 +286,13 @@ export default function InfoProject() {
               </div>
               <div className="infoProject-inner">
                 <strong>Source code</strong>
-                <Link
+                <a
                   style={{ marginBottom: "16px" }}
-                  to={`https://www.google.com/`}
+                  href={dataProject?.source_code}
+                  target="_blank"
                 >
                   {dataProject?.source_code}
-                </Link>
+                </a>
               </div>
               <div className="infoProject-inner">
                 <strong>Báo cáo</strong>
@@ -337,10 +340,10 @@ export default function InfoProject() {
               />
             </Form.Item>
             <Form.Item label="Họ tên sinh viên">
-              <Input disabled value={dataStudent[0]?.fullname} />
+              <Input disabled value={dataStudent?.fullname} />
             </Form.Item>
             <Form.Item label="Mã số sinh viên">
-              <Input disabled value={dataStudent[0]?.number} />
+              <Input disabled value={dataStudent?.number} />
             </Form.Item>
             <Form.Item label="Mô tả" name={["user", "introduction"]}>
               <Input.TextArea
@@ -369,21 +372,17 @@ export default function InfoProject() {
         </Modal>
 
         <div className="container_project--footer">
-          <div className="project_exchange">
-            <h6>Trao đổi</h6>
-            <div className="project_exchanger-content"></div>
-          </div>
           <div className="project_evaluate">
             <h6>Đánh giá</h6>
             {isProject && (
               <div className="project_evaluate-content">
-                <Form>
-                  <Input.TextArea
-                    placeholder="Thêm nhận xét"
-                    rows={6}
-                    value={commentTeacher}
-                    onChange={(e) => setCommentTeacher(e.target.value)}
-                  ></Input.TextArea>
+                <Input.TextArea
+                  placeholder="Thêm nhận xét"
+                  rows={6}
+                  value={commentTeacher}
+                  onChange={(e) => setCommentTeacher(e.target.value)}
+                ></Input.TextArea>
+                <div style={{display:"grid", flex:"1"}}>
                   <div style={{ width: "100%" }}>
                     <InputNumber
                       width={"100%"}
@@ -406,20 +405,19 @@ export default function InfoProject() {
                     />
                   </div>
                   <Button
-                    style={{ margin: "0", marginTop: "30px" }}
+                    style={{ margin: "0"}}
                     type="primary"
                     htmlType="submit"
                     onClick={() => handleEvaluateProject(dataProject.id)}
                   >
                     Gửi
                   </Button>
-                </Form>
+                </div>
               </div>
             )}
           </div>
         </div>
       </div>
-      <div className="container_project--bottom"></div>
     </div>
   );
 }

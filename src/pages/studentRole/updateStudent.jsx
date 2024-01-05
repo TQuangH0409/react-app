@@ -11,17 +11,22 @@ import {
   Select,
   Switch,
   TreeSelect,
-  Divider, Table, Space,
-  message, Upload,
-  SelectProps
-} from 'antd';
+  Divider,
+  Table,
+  Space,
+  message,
+  Upload,
+  SelectProps,
+} from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  optionSchool, getAllResearchArea, updateUserById
-} from "../../apis/apiAdmin"
+  optionSchool,
+  getAllResearchArea,
+  updateUserById,
+} from "../../apis/apiAdmin";
 import { sendAvatar } from "../../apis/apiStudent";
 import { setIsShow } from "../../hook/slice";
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 
 const UpdateStudent = (props) => {
   const [update] = Form.useForm();
@@ -34,9 +39,11 @@ const UpdateStudent = (props) => {
   };
   const handleOk = async () => {
     const formValues = await update.validateFields();
-    const researchAreaArray = formValues.research_area.map(area => ({ number: area }));
+    const researchAreaArray = formValues.research_area.map((area) => ({
+      number: area,
+    }));
     const additionalFields = {
-      research_area: researchAreaArray
+      research_area: researchAreaArray,
     };
 
     const values = { ...formValues, ...additionalFields };
@@ -47,17 +54,17 @@ const UpdateStudent = (props) => {
       const resAvatar = await sendAvatar(formData);
       console.log(resAvatar);
       const value = resAvatar.objectId;
-      console.log(value)
-      const avt = { avatar: value }
-      console.log(avt)
-      const res = await updateUserById(student.id, avt)
+      console.log(value);
+      const avt = { avatar: value };
+      console.log(avt);
+      const res = await updateUserById(student.id, avt);
     }
     setIsModalOpen(false);
-    dispatch(setIsShow(false))
+    dispatch(setIsShow(false));
   };
   const handleCancel = () => {
     setIsModalOpen(false);
-    dispatch(setIsShow(false))
+    dispatch(setIsShow(false));
   };
 
   const student = useSelector((state) => {
@@ -71,16 +78,16 @@ const UpdateStudent = (props) => {
       return {
         value: value.number,
         label: value.name,
-      }
+      };
     });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await getAllResearchArea();
-        setDataResearch(data)
+        setDataResearch(data);
       } catch (error) {
-        console.error('Error fetching student data:', error);
+        console.error("Error fetching student data:", error);
       }
     };
     fetchData();
@@ -96,17 +103,17 @@ const UpdateStudent = (props) => {
 
   const getBase64 = (img, callback) => {
     const reader = new FileReader();
-    reader.addEventListener('load', () => callback(reader.result));
+    reader.addEventListener("load", () => callback(reader.result));
     reader.readAsDataURL(img);
   };
   const beforeUpload = (file) => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
     if (!isJpgOrPng) {
-      message.error('You can only upload JPG/PNG file!');
+      message.error("You can only upload JPG/PNG file!");
     }
     const isLt2M = file.size / 1024 / 1024 < 2;
     if (!isLt2M) {
-      message.error('Image must smaller than 2MB!');
+      message.error("Image must smaller than 2MB!");
     }
     setAvatar(file);
     return isJpgOrPng && isLt2M;
@@ -115,11 +122,11 @@ const UpdateStudent = (props) => {
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState();
   const handleChange = (info) => {
-    if (info.file.status === 'uploading') {
+    if (info.file.status === "uploading") {
       setLoading(true);
       return;
     }
-    if (info.file.status === 'done') {
+    if (info.file.status === "done") {
       // Get this url from response in real world.
       getBase64(info.file.originFileObj, (url) => {
         setLoading(false);
@@ -132,7 +139,7 @@ const UpdateStudent = (props) => {
     <button
       style={{
         border: 0,
-        background: 'none',
+        background: "none",
       }}
       type="button"
     >
@@ -159,7 +166,7 @@ const UpdateStudent = (props) => {
         cancelText="Cancle"
       >
         <Form form={update} layout="vertical">
-          <Form.Item style={{ textAlign: 'center' }}>
+          <Form.Item style={{ textAlign: "center" }}>
             <Upload
               name="avatar"
               listType="picture-card"
@@ -174,7 +181,8 @@ const UpdateStudent = (props) => {
                   src={imageUrl}
                   alt="avatar"
                   style={{
-                    width: '100%',
+                    width: "100%",
+                    height: "100%",
                   }}
                 />
               ) : (
@@ -182,7 +190,7 @@ const UpdateStudent = (props) => {
               )}
             </Upload>
           </Form.Item>
-          <Form.Item label="Họ và tên" name="fullname" fieldId='fullname'>
+          <Form.Item label="Họ và tên" name="fullname" fieldId="fullname">
             <Input />
           </Form.Item>
           <Form.Item label="CCCD" name="cccd">
@@ -201,13 +209,15 @@ const UpdateStudent = (props) => {
             <Input />
           </Form.Item>
           <Form.Item label="Trường/Viện:" name="school">
-            <Select options={optionSchool} >
-            </Select>
+            <Select options={optionSchool}></Select>
           </Form.Item>
           <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area">
-            <Select mode='multiple' labelInValue optionLabelProp="label" options={dataSelect}>
-
-            </Select>
+            <Select
+              mode="multiple"
+              labelInValue
+              optionLabelProp="label"
+              options={dataSelect}
+            ></Select>
           </Form.Item>
         </Form>
       </Modal>

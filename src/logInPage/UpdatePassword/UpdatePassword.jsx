@@ -1,8 +1,21 @@
 import { Link } from "react-router-dom";
-import Input from "../../components/Input/input";
 import "./UpdatePassword.css";
+import { useState } from "react";
+import { changePassword } from "../../apis/apiLogin";
 
 function UpdatePassword() {
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    try {
+      changePassword(oldPassword, newPassword);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="login-container">
       <div className="v-formLogin-container">
@@ -12,24 +25,22 @@ function UpdatePassword() {
             <div className="v-input-container">
               <span className="v-label">Mật khẩu cũ</span>
               <input
-                // value={email}
+                value={oldPassword}
                 className="v-input"
                 placeholder="Mật khẩu cũ"
                 type="password"
-                // onChange={handleEmailChange}
-                // icon={icon}
+                onChange={(e) => setOldPassword(e.target.value)}
               />
             </div>
 
             <div className="v-input-container">
               <span className="v-label">Mật khẩu mới</span>
               <input
-                // value={password}
+                value={newPassword}
                 type="password"
                 placeholder="Mật khẩu mới"
                 className="v-input"
-                // onChange={handlePasswordChange}
-                // icon={icon}
+                onChange={(e) => setNewPassword(e.target.value)}
               />
             </div>
             <div
@@ -42,7 +53,7 @@ function UpdatePassword() {
             </div>
             <button
               className="v-formLogin-button"
-              // onClick={(e) => handleSubmit(e)}
+              onClick={(e) => handleSubmit(e)}
             >
               Đổi mật khẩu
             </button>

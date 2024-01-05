@@ -1,6 +1,6 @@
 import axiosData from "./axiosData";
 
-export async function login(email, password) {
+export const login = async (email, password) => {
   const res = await axiosData().post("/auth/login", {
     email: email,
     password: password,
@@ -14,4 +14,25 @@ export async function login(email, password) {
   localStorage.setItem("userId", res.data.id);
   localStorage.setItem("fullname", res.data.fullname);
 
-}
+};
+
+export const changePassword = async (oldPassword, newPassword) => {
+  const res = await axiosData().post("/auth/update-pasword", {
+    old_password: oldPassword,
+    new_password: newPassword,
+  });
+  if (!res) {
+    alert("server has error");
+  }
+  return res.data;
+};
+
+export const forgetPassword = async (email) => {
+  const res = await axiosData().post("/auth/forgot-password", {
+    email: email,
+  });
+  if (!res) {
+    alert("server has error");
+  }
+  return res.data;
+};

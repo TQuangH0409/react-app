@@ -189,12 +189,12 @@ const ListTeacher = () => {
     {
       title: 'STT',
       key: 'index',
-      render: (text: string, record: any, index: number) => (page - 1) * paginationSize + index + 1,
+      render: (text, record, index) => (page - 1) * paginationSize + index + 1,
     },
     {
       title: 'Tên hiển thị',
       dataIndex: 'fullname',
-      render: (text: string) => <a>{text}</a>,
+      render: (text) => <a>{text}</a>,
       key: 'fullname'
     },
     {
@@ -291,7 +291,7 @@ const ListTeacher = () => {
     if (dataTeacher) {
       detail.setFieldsValue(dataTeacher);
       update.setFieldsValue(dataTeacher);
-      const researchAreaNames = dataTeacher.research_area.map(area => area.number);
+      const researchAreaNames = dataTeacher.research_area.map(area => area.name);
       detail.setFieldsValue({ research_area: researchAreaNames });
       update.setFieldsValue({ research_area: researchAreaNames });
     }

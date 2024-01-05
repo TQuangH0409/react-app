@@ -29,11 +29,9 @@ import {
   DeleteOutlined, FormOutlined, EyeOutlined,
   InboxOutlined, ExclamationCircleFilled
 } from '@ant-design/icons';
-import type { ColumnsType, TablePaginationConfi } from 'antd/es/table';
 import create from '@ant-design/icons/lib/components/IconFont';
 const { confirm } = Modal;
 
-interface DataType { }
 const { Search } = Input;
 const onSearch = (value, _e, info) => console.log(info?.source, value);
 
@@ -207,13 +205,13 @@ export const ListStudent = () => {
     {
       title: "STT",
       key: "index",
-      render: (text: string, record: any, index: number) =>
+      render: (text, record, index) =>
         (page - 1) * paginationSize + index + 1,
     },
     {
       title: 'Tên hiển thị',
       dataIndex: 'fullname',
-      render: (text: string) => <a>{text}</a>,
+      render: (text) => <a>{text}</a>,
       key: 'fullname'
     },
     {
@@ -318,7 +316,7 @@ export const ListStudent = () => {
     if (dataStudent) {
       detail.setFieldsValue(dataStudent);
       update.setFieldsValue(dataStudent);
-      const researchAreas = dataStudent.research_area.map(area => area.number);
+      const researchAreas = dataStudent.research_area.map(area => area.name);
       detail.setFieldsValue({ research_area: researchAreas });
       update.setFieldsValue({ research_area: researchAreas });
     }

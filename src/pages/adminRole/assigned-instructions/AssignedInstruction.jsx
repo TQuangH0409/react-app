@@ -73,7 +73,7 @@ const AssignedInstruction = () => {
     {
       title: 'STT',
       key: 'index',
-      render: (text: string, record: any, index: number) => (page - 1) * paginationSize + index + 1,
+      render: (text, record, index) => (page - 1) * paginationSize + index + 1,
     },
     {
       title: "Họ và tên",
@@ -93,16 +93,16 @@ const AssignedInstruction = () => {
   ];
   const [data, setData] = useState([]);
   const getDataInstruction = async () => {
-      let i = 0;
-      const newData = instruct.map((e, index) => ({
-        key: index,
-        STT: i.toString(),
-        name: e.teacher.fullname,
-        number: e.teacher.number,
-        school: e.teacher.school || "Trường công nghệ thông tin và truyền thông",
-        student: e.student,
-      }));
-      setData(newData)
+    let i = 0;
+    const newData = instruct.map((e, index) => ({
+      key: index,
+      STT: i.toString(),
+      name: e.teacher.fullname,
+      number: e.teacher.number,
+      school: e.teacher.school || "Trường công nghệ thông tin và truyền thông",
+      student: e.students || e.student,
+    }));
+    setData(newData)
   }
 
   useEffect(() => {
@@ -148,11 +148,11 @@ const AssignedInstruction = () => {
     const fetchData = async () => {
       setLoading(true)
       const res = await getListAssign(semester, "INSTRUCT")
-      if(res) {
+      if (res) {
         setInstruct(res.assignment);
         getDataInstruction();
       }
-      
+
     }
     fetchData();
     setLoading(false)
@@ -162,7 +162,7 @@ const AssignedInstruction = () => {
     setSemester(selectedSemester);
     setLoading(true)
     const res = await getListAssign(selectedSemester, "INSTRUCT")
-    if(res) {
+    if (res) {
       setInstruct(res.assignment);
       getDataInstruction();
     }
@@ -198,9 +198,13 @@ const AssignedInstruction = () => {
         <Button style={{ margin: "0 5px 0 5px" }}
           type="primary"
           onClick={async () => {
+            setLoading(true);
             const res = await getAssInstruct(limit, "DRAFT", semester);
+            if (res.listStudent.length > 0) {
+              alert("Tồn tại sinh viên chưa được chia cho giáo viên nào! Cần tăng giới hạn sinh viên / 1 giáo viên")
+            }
             setInstruct(res.assignment);
-            
+            setLoading(false)
           }}
         >
           Tạo nháp
@@ -209,9 +213,11 @@ const AssignedInstruction = () => {
         <Button style={{ margin: "0" }}
           type="primary"
           onClick={async () => {
-            const res = await getAssInstruct(limit, "SAVE", semester);
-            console.log(res);
-            setInstruct(res.assignment);
+        
+            
+              const res = await getAssInstruct(limit, "SAVE", semester);
+              setInstruct(res.assignment);
+           
           }}
         >
           Lưu
@@ -236,7 +242,7 @@ const AssignedInstruction = () => {
           columns={columns}
           expandable={{
             expandedRowRender: (record) => {
-              
+
               return expandedRowRenderFunc(record.student);
             },
           }}

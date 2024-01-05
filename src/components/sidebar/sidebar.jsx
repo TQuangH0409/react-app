@@ -69,12 +69,11 @@ const Sidebar = ({ user }) => {
         </Menu>
       )}
       {/*teacher */}
-      {/* {user.isTeacher} && */}
       {localStorage.getItem("roles") === "T" && (
         <Menu>
           <Menu.Item key="student-information">
             Thông tin cá nhân
-            <Link to="/info-teacher"></Link>
+            <Link to="/teacher/info-teacher"></Link>
           </Menu.Item>
 
           <hr className="sidebar-divider my-0"></hr>

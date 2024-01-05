@@ -1,24 +1,14 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { Button, Input, Table } from "antd";
+import { Button, Input, Select, Table } from "antd";
 import "../../adminRole/globalCSS.css";
 import { EyeOutlined } from "@ant-design/icons";
 import { getAllProjectReview } from "../../../apis/apiTeacher";
+import { optionYear } from "../../../apis/apiAdmin";
 
 const { Search } = Input;
 const onSearch = (value, _e, info) => console.log(info?.source, value);
 export const ListReviewProject = () => {
-  // const data = [
-  //   {
-  //     topic_name: "Project III",
-  //     mark: "10/10",
-  //     student_name: "Nguyễn Trường Việt",
-  //     student_id: "20198273",
-  //     teacher_argument: "Nguyễn Đăng Hải",
-  //     createDate: "25-12-2023",
-  //     peopleCreate: "Nguyễn Trường Việt",
-  //   },
-  // ];
   const [page, setPage] = useState(1);
   const [paginationSize, setPaginationSize] = useState(10);
 
@@ -33,22 +23,18 @@ export const ListReviewProject = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      setTimeout(async () => {
-        try {
-          const data = await getAllProjectReview(
-            localStorage.getItem("userId")
-          );
-          setDataAll(data)
-          setDataTable(data.projects);
-          setDataTableFake(data.projects);
+      try {
+        const data = await getAllProjectReview(localStorage.getItem("userId"));
+        setDataAll(data);
+        setDataTable(data.projects);
+        setDataTableFake(data.projects);
 
-          // setDataFake(data.students);
-          // setTeacher(data);
-          setLoading(false);
-        } catch (error) {
-          console.error("Error fetching student data:", error);
-        }
-      }, 1000);
+        // setDataFake(data.students);
+        // setTeacher(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching student data:", error);
+      }
     };
     fetchData();
   }, []);
@@ -121,6 +107,16 @@ export const ListReviewProject = () => {
             paddingLeft: 10,
           }}
         />
+
+        <div className="select-semester">
+          <span style={{ color: "black" }}>Kỳ học: </span>
+          <Select
+            defaultValue="20231"
+            // onChange={handleSemesterChange}
+            options={optionYear}
+            style={{ width: 120 }}
+          ></Select>
+        </div>
       </div>
 
       <div className="content-main">

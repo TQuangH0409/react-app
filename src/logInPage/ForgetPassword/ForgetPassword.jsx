@@ -1,7 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import "./ForgetPassword.css";
 import { Link } from "react-router-dom";
+import { forgetPassword } from "../../apis/apiLogin";
 export default function ForgetPassword() {
+  const [email, setEmail] = useState("");
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    try {
+      forgetPassword(email);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div className="login-container">
       <div className="v-formLogin-container">
@@ -11,18 +21,16 @@ export default function ForgetPassword() {
             <div className="v-input-container">
               <span className="v-label">Email</span>
               <input
-                // value={email}
+                value={email}
                 className="v-input"
                 placeholder="Nhập email..."
-                type="password"
-                // onChange={handleEmailChange}
-                // icon={icon}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
             <button
               className="v-formLogin-button"
-              // onClick={(e) => handleSubmit(e)}
+              onClick={(e) => handleSubmit(e)}
             >
               Gửi
             </button>

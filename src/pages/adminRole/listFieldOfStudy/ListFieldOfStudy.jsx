@@ -56,16 +56,16 @@ const ListFieldOfStudy = () => {
     fetchData();
   }, []);
 
-  const columns: ColumnsType<DataType> = [
+  const columns = [
     {
       title: 'STT',
       key: 'index',
-      render: (text: string, record: any, index: number) => (page - 1) * paginationSize + index + 1,
+      render: (text, record, index) => (page - 1) * paginationSize + index + 1,
     },
     {
       title: 'Tên hiển thị',
       dataIndex: 'name',
-      render: (text: string) => <a>{text}</a>,
+      render: (text) => <a>{text}</a>,
     },
     {
       title: 'Mã số',
@@ -272,11 +272,11 @@ const ListFieldOfStudy = () => {
         <Form layout="vertical"
           form={update}>
           <Form.Item label="Tên" name="name">
-            <Input />
+            <Input readOnly/>
           </Form.Item>
           
           <Form.Item label="Mã số" name="number">
-            <Input />
+            <Input readOnly />
           </Form.Item>
           
         </Form>
@@ -299,7 +299,7 @@ const ListFieldOfStudy = () => {
           </Form.Item>
           
           <Form.Item label="Mã số" name="number">
-            <Input />
+            <Input readOnly />
           </Form.Item>
           
         </Form>

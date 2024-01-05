@@ -1,14 +1,11 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { Button, Input, Table } from "antd";
+import { Button, Input, Select, Table } from "antd";
 import "../../adminRole/globalCSS.css";
-import { EyeOutlined, FormOutlined } from "@ant-design/icons";
-
-// import getData from "../api/apiData.js";
-import axios from "axios";
+import { EyeOutlined } from "@ant-design/icons";
 import { getAllProject } from "../../../apis/apiTeacher";
-import unorm from "unorm";
 import { Link } from "react-router-dom";
+import { optionYear } from "../../../apis/apiAdmin";
 const { Search } = Input;
 
 export const ListProject = () => {
@@ -33,7 +30,6 @@ export const ListProject = () => {
         });
         console.log(filteredData);
         setDataTable(filteredData);
-        // setDataTable(filteredData);
       } else {
         setDataTable(dataFake);
       }
@@ -41,47 +37,30 @@ export const ListProject = () => {
       console.log(123);
 
       if (!isNaN(currentValue)) {
-        // Check if it's a valid number
         const filteredData = dataFake.filter((entry) =>
           entry.number.toString().includes(currentValue.toString())
         );
         setDataTable(filteredData);
       } else {
         console.log("Invalid number");
-        // Handle the case where currentValue is not a valid number
       }
     }
   };
   useEffect(() => {
     const fetchData = async () => {
-      setTimeout(async () => {
-        try {
-          const data = await getAllProject(localStorage.getItem("userId"));
-          setDataAll(data);
-          setDataTable(data.students);
-          setDataFake(data.students);
-          setDataTeacher(data.teacher);
-          setLoading(false);
-        } catch (error) {
-          console.error("Error fetching student data:", error);
-        }
-      }, 1000);
+      try {
+        const data = await getAllProject(localStorage.getItem("userId"));
+        setDataAll(data);
+        setDataTable(data.students);
+        setDataFake(data.students);
+        setDataTeacher(data.teacher);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching student data:", error);
+      }
     };
     fetchData();
   }, []);
-
-  // useEffect(() => {
-  //   const formatDate = async (date) => {
-  //     let dateObj = new Date(date);
-
-  //     const year = dateObj.getFullYear();
-  //     const month = (dateObj.getMonth() + 1).toString().padStart(2, "0"); // Month is zero-based
-  //     const day = dateObj.getDate().toString().padStart(2, "0");
-
-  //     const formattedDate = `${day}-${month}-${year}`;
-  //     return formattedDate;
-  //   };
-  // }, []);
 
   const columns = [
     {
@@ -108,7 +87,7 @@ export const ListProject = () => {
       key: "index",
 
       render: (text, record, index) => {
-        return (text = "Nguyễn Trường Việt");
+        // return (text = "Nguyễn Trường Việt");
         return (text = dataTeacher.fullname);
       },
     },
@@ -118,7 +97,7 @@ export const ListProject = () => {
         let dateObj = new Date(dataAll.created_time);
 
         const year = dateObj.getFullYear();
-        const month = (dateObj.getMonth() + 1).toString().padStart(2, "0"); // Month is zero-based
+        const month = (dateObj.getMonth() + 1).toString().padStart(2, "0"); 
         const day = dateObj.getDate().toString().padStart(2, "0");
 
         const formattedDate = `${day}-${month}-${year}`;
@@ -137,12 +116,22 @@ export const ListProject = () => {
               className="button-view"
               shape="circle"
               icon={<EyeOutlined />}
-            >{""}</Button>
+            >
+              {""}
+            </Button>
           </Link>
         </div>
       ),
     },
   ];
+
+  const [semester, setSemester] = useState('20231');
+
+  // const handleSemesterChange = async (selectedSemester) => {
+  //   setSemester(selectedSemester);
+  //   const data = await getAllUserByPosition(`STUDENT&semester=${selectedSemester}`);
+  //   setDataAll(data);
+  // };
 
   return (
     <div className="list-student mb-4">
@@ -169,6 +158,15 @@ export const ListProject = () => {
             paddingLeft: 10,
           }}
         />
+        <div className='select-semester'>
+          <span style={{ color: "black" }} >Kỳ học: </span>
+          <Select defaultValue="20231" 
+          // onChange={handleSemesterChange}
+          options={optionYear}
+          style={{ width: 120 }} >
+
+          </Select>
+        </div>
       </div>
 
       <div className="content-main">

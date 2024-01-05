@@ -25,7 +25,6 @@ const getAllProjectReview = async (teacherId) => {
 };
 
 const getTeacherById = async () => {
-  console.log(123);
   try {
     const response = await axiosData().get(
       `/users/${localStorage.getItem("userId")}`
@@ -71,7 +70,7 @@ const putProject = async (data, id) => {
 const postFile = async (file) => {
   try {
     const response = await axiosData().post(`/files/upload-file/`, file);
-    return response;
+    return response.data;
   } catch (error) {
     console.error(error);
     throw error; // Re-throw the error to handle it where the function is called
@@ -107,7 +106,17 @@ const downFileReport = async (idReport) => {
     console.error(error);
     throw error; // Re-throw the error to handle it where the function is called
   }
-}
+};
+
+const getResearchAreas = async () => {
+  try {
+    const response = await axiosData().get(`/research-areas/data-source`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error; // Re-throw the error to handle it where the function is called
+  }
+};
 
 //   export {getAllProject , getUserById, getAllResearchArea}
 export {
@@ -120,5 +129,6 @@ export {
   putProject,
   postFile,
   putInfoTeacher,
-  downFileReport
+  downFileReport,
+  getResearchAreas,
 };

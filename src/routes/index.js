@@ -31,7 +31,7 @@ const PublicRoutes = [
   { path: "/student", component: InfoStudent },
   { path: "/project", component: InfoStudentProject },
 
-  { path: "/info-teacher", component: infoTeacher },
+  { path: "/teacher/info-teacher", component: infoTeacher },
   { path: "/teacher/list-project", component: listProject },
   { path: "/teacher/info-project/:id", component: infoProject },
   { path: "/teacher/list-review-project", component: listReviewProject },

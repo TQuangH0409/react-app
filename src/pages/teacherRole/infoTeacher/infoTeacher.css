@@ -55,6 +55,23 @@
 .ant-btn-icon-reset{
     margin: 0 !important;
 }
+/* .ant-upload-list{
+    display: flex;
+    justify-content: center;
+}
+.ant-upload{
+    width: 100% !important;
+    height: 70px !important;
+    margin-right: 0 !important;
+} */
+/* .ant-upload-list-item-container{
+    width: 60% !important;
+    height: 70px !important;
+    margin-right: 0 !important;
+} */
+/* .ant-upload span{
+    width: 100% !important;
+} */
 
 /* img{
     transform: translate3d(0px, 0px, 0px) scale3d(4, 4, 4) rotate(0deg) !important;
