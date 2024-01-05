@@ -355,6 +355,18 @@ const InfoStudentProject = () => {
               </Row>
             </Col>
           </Row>
+          <Row style={{ margin: "20px" }}>
+            <Col span={8}>Điểm quá trình:</Col>
+            <Col span={12}>{projectDetail?.rate?.mark_mid}</Col>
+          </Row>
+          <Row style={{ margin: "20px" }}>
+            <Col span={8}>Điểm cuối kì:</Col>
+            <Col span={12}>{projectDetail?.rate?.mark_final}</Col>
+          </Row>
+          <Row style={{ margin: "20px" }}>
+            <Col span={8}>Đánh giá:</Col>
+            <Col span={12}>{projectDetail?.rate?.comment}</Col>
+          </Row>
         </Col>
       </Row>
     </>
