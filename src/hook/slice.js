@@ -3,11 +3,11 @@ import { createSlice } from "@reduxjs/toolkit";
 const counterSlice = createSlice({
   name: "store",
   initialState: {
-    student: {},
-    project: {},
-    instruct: {},
-    review: {},
-    array: [],
+    student: undefined,
+    project: undefined,
+    instruct: undefined,
+    review: undefined,
+    array: undefined,
     isShow: false,
   },
   reducers: {

@@ -11,7 +11,7 @@ export async function getProjectByStudent(id) {
       error
     );
   }
-  return {};
+  return undefined;
 }
 export async function getProjectById(id) {
   try {

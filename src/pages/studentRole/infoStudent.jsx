@@ -19,7 +19,7 @@ import UpdateStudent from "./updateStudent";
 
 const InfoStudent = () => {
   const [student, setStudent] = useState({});
-  const [avatarStudent, setAvatarStudent] = useState()
+  const [avatarStudent, setAvatarStudent] = useState();
   const [instruct, setInstruct] = useState(undefined);
   const [review, setReview] = useState(undefined);
   const dispatch = useDispatch();
@@ -31,27 +31,34 @@ const InfoStudent = () => {
       try {
         const s = await getUserById();
         setStudent(s);
-        
+
         const ass = await getAss({
           student: localStorage.getItem("userId"),
           type: "INSTRUCT",
         });
-        const instruct = await getUserById(ass?.teacher.id);
-        setInstruct(instruct);
+        if (ass) {
+          const instruct = await getUserById(ass?.teacher.id);
+          setInstruct(instruct);
+        }
 
         const rev = await getAss({
           student: localStorage.getItem("userId"),
           type: "REVIEW",
         });
-        const review = await getUserById(rev?.teacher.id);
-        setReview(review);
+
+        if (rev) {
+          const review = await getUserById(rev?.teacher.id);
+          setReview(review);
+        }
 
         const project = await getProjectByStudent();
-        const projectDetail = await getProjectById(project.id);
+        if (project) {
+          const projectDetail = await getProjectById(project.id);
+          dispatch(setInfoProject(projectDetail));
+        }
         dispatch(setInfoStudent(s));
         dispatch(setInfoInstruct(instruct));
         dispatch(setInfoReview(review));
-        // dispatch(setInfoProject(projectDetail));
       } catch (error) {
         console.log("🚀 ~ file: updateStudent.jsx:18 ", error);
       }
@@ -67,7 +74,7 @@ const InfoStudent = () => {
           Thông tin sinh viên
           <EditOutlined
             onClick={() => {
-              dispatch(setIsShow(true))
+              dispatch(setIsShow(true));
             }}
           />
         </Col>
@@ -79,7 +86,7 @@ const InfoStudent = () => {
             <Col span={8}>
               <div className="avatar">
                 <img
-                  src= {student.avatar}
+                  src={student.avatar}
                   alt="Italian Trulli"
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
@@ -320,18 +327,18 @@ const InfoStudent = () => {
                   style={{ marginBottom: "5px", marginTop: "5px" }}
                 >
                   <Row span={24}>
-                      <Col span={8}>Lĩnh vực nghiên cứu:</Col>
-                      <Col span={16}>
-                        {review?.research_area &&
-                          review?.research_area.map((r, idx) => {
-                            return (
-                              <Col span={24} key={instruct + idx}>
-                                {r.name}
-                              </Col>
-                            );
-                          })}
-                      </Col>
-                    </Row>
+                    <Col span={8}>Lĩnh vực nghiên cứu:</Col>
+                    <Col span={16}>
+                      {review?.research_area &&
+                        review?.research_area.map((r, idx) => {
+                          return (
+                            <Col span={24} key={instruct + idx}>
+                              {r.name}
+                            </Col>
+                          );
+                        })}
+                    </Col>
+                  </Row>
                 </Col>
               </Row>
             </Col>

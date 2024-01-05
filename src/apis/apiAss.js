@@ -7,8 +7,11 @@ export async function getAss(parmas) {
       uri += `${key}=${parmas[key]}&`;
     }
   }
-  const res = await axiosData().get(`/assignments/?${uri}`);
-  return res.data;
+  try {
+    const res = await axiosData().get(`/assignments/?${uri}`);
+    return res.data;
+  } catch (error) {}
+  return undefined;
 }
 
 export async function getAssInstruct(limit, type) {

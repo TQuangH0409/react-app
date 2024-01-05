@@ -311,7 +311,7 @@ const ListTeacher = () => {
     try {
       // Kiểm tra và lấy giá trị từ form
       const formValues = await create.validateFields();
-      const researchAreaArray = formValues.research_area.map(area => ({ number: area }));
+      const researchAreaArray = formValues.research_area?.map(area => ({ number: area }));
 
       // Tạo một đối tượng mới với các trường bổ sung
       const additionalFields = {

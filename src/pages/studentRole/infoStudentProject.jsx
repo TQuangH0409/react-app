@@ -64,8 +64,8 @@ const InfoStudentProject = () => {
   const [student, setStudent] = useState({});
   const [instruct, setInstruct] = useState(undefined);
   const [review, setReview] = useState(undefined);
-  const [project, setProject] = useState({});
-  const [projectDetail, setProjectDetail] = useState({});
+  const [project, setProject] = useState(undefined);
+  const [projectDetail, setProjectDetail] = useState(undefined);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -78,21 +78,28 @@ const InfoStudentProject = () => {
           student: localStorage.getItem("userId"),
           type: "INSTRUCT",
         });
-        const instruct = await getUserById(ass?.teacher.id);
-        setInstruct(instruct);
+        if (ass) {
+          const instruct = await getUserById(ass?.teacher.id);
+          setInstruct(instruct);
+        }
 
         const rev = await getAss({
           student: localStorage.getItem("userId"),
           type: "REVIEW",
         });
-        const review = await getUserById(rev?.teacher.id);
-        setInstruct(review);
 
+        if (rev) {
+          const review = await getUserById(rev?.teacher.id);
+          setReview(review);
+        }
         const project = await getProjectByStudent(s.id);
-        setProject(project);
+        if (project) {
+          setProject(project);
 
-        const projectDetail = await getProjectById(project.id);
-        setProjectDetail(projectDetail);
+          const projectDetail = await getProjectById(project.id);
+
+          setProjectDetail(projectDetail);
+        }
 
         dispatch(setInfoStudent(s));
         dispatch(setInfoInstruct(instruct));
@@ -284,50 +291,68 @@ const InfoStudentProject = () => {
       </Row>
       <Row>
         <Col className="info-student-title" span={24}>
-          Thông tin đồ án
+          {`Thông tin đồ án ${projectDetail ? "" : `(chưa có đồ án)`}`}
         </Col>
       </Row>
       <Row>
         <Col span={12}>
           <Row style={{ margin: "20px" }}>
             <Col span={8}>Tên đề tài:</Col>
-            <Col span={12}>
-              {projectDetail?.name}
-            </Col>
+            <Col span={12}>{projectDetail?.name}</Col>
           </Row>
           <Row style={{ margin: "20px" }}>
             <Col span={8}>
               Source code
-              <EditOutlined
+              {projectDetail && <EditOutlined
                 onClick={handleEditClick}
                 style={{ marginLeft: 8 }}
-              />
+              />}
               :
             </Col>
             <Col span={12}>
-              <a href={projectDetail.source_code}>
-                {projectDetail.source_code}
+              <a href={projectDetail ? projectDetail.source_code : ""}>
+                {projectDetail ? projectDetail.source_code : ""}
               </a>
             </Col>
           </Row>
           <Row style={{ margin: "20px" }}>
             <Col span={8} style={{ display: "flex" }}>
               <p>Báo cáo</p>
-              <Dragger
+              {projectDetail && <Dragger
                 {...uploadProps}
                 style={{
                   maxHeight: "24px",
                   width: "24px",
                   display: "flex",
                   alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <VerticalAlignTopOutlined />
-              </Dragger>
+              </Dragger>}
               <p>:</p>
             </Col>
             <Col span={12}>
-              {projectDetail.report}
+              <Row>
+              {projectDetail && projectDetail?.report && projectDetail.map(r => {
+                return  <Col span={8} style={{ display: "flex" }}>
+                <p>{r.name}</p>
+                {projectDetail && <Dragger
+                  {...uploadProps}
+                  style={{
+                    maxHeight: "24px",
+                    width: "24px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <VerticalAlignTopOutlined />
+                </Dragger>}
+                <p>:</p>
+              </Col>
+              })}
+              </Row>
             </Col>
           </Row>
         </Col>
