@@ -6,3 +6,13 @@ export async function getUserById(id) {
 
   return res.data;
 }
+
+export async function sendAvatar(file) {
+
+  const res = await axiosData().post(`/files/upload-file/`, file);
+  return res.data;
+}
+
+export async function getAvatar(id) {
+  const res = await axiosData().get(`/files/${id}`);
+}

@@ -29,11 +29,9 @@ import {
   DeleteOutlined, FormOutlined, EyeOutlined,
   InboxOutlined, ExclamationCircleFilled
 } from '@ant-design/icons';
-import type { ColumnsType, TablePaginationConfi } from 'antd/es/table';
 import create from '@ant-design/icons/lib/components/IconFont';
 const { confirm } = Modal;
 
-interface DataType { }
 const { Search } = Input;
 const onSearch = (value, _e, info) => console.log(info?.source, value);
 
@@ -197,17 +195,17 @@ export const ListStudent = () => {
     reader.readAsArrayBuffer(file);
   };
 
-  const columns: ColumnsType<DataType> = [
+  const columns = [
     {
       title: "STT",
       key: "index",
-      render: (text: string, record: any, index: number) =>
+      render: (text, record, index) =>
         (page - 1) * paginationSize + index + 1,
     },
     {
       title: 'Tên hiển thị',
       dataIndex: 'fullname',
-      render: (text: string) => <a>{text}</a>,
+      render: (text) => <a>{text}</a>,
       key: 'fullname'
     },
     {

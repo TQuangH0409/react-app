@@ -181,12 +181,12 @@ const ListTeacher = () => {
     {
       title: 'STT',
       key: 'index',
-      render: (text: string, record: any, index: number) => (page - 1) * paginationSize + index + 1,
+      render: (text, record, index) => (page - 1) * paginationSize + index + 1,
     },
     {
       title: 'Tên hiển thị',
       dataIndex: 'fullname',
-      render: (text: string) => <a>{text}</a>,
+      render: (text) => <a>{text}</a>,
       key: 'fullname'
     },
     {
@@ -196,7 +196,7 @@ const ListTeacher = () => {
     },
     {
       title: 'Cấp bậc',
-      dataIndex: 'class',
+      dataIndex: 'degree',
     },
     {
       title: 'Trường/Viện',
@@ -311,7 +311,7 @@ const ListTeacher = () => {
     try {
       // Kiểm tra và lấy giá trị từ form
       const formValues = await create.validateFields();
-      const researchAreaArray = formValues.research_area.map(area => ({ number: area }));
+      const researchAreaArray = formValues.research_area?.map(area => ({ number: area }));
 
       // Tạo một đối tượng mới với các trường bổ sung
       const additionalFields = {
@@ -406,6 +406,9 @@ const ListTeacher = () => {
             <Form.Item label="CCCD" name="cccd">
               <Input />
             </Form.Item>
+            <Form.Item label="Bằng cấp" name="degree">
+              <Input />
+            </Form.Item>
             <Form.Item label="Mã số giảng viên" name="number">
               <Input />
             </Form.Item>
@@ -430,7 +433,7 @@ const ListTeacher = () => {
           Thêm mới excel
         </Button>
         <Modal
-          title="Thêm mới sinh viên"
+          title="Thêm mới giảng viên"
           centered
           open={modal2Open}
           cancelText="Từ chối"
@@ -522,6 +525,9 @@ const ListTeacher = () => {
           <Form.Item label="Mã số giảng viên" name="number">
             <Input readOnly />
           </Form.Item>
+          <Form.Item label="Bằng cấp" name="degree">
+            <Input readOnly />
+          </Form.Item>
           <Form.Item label="Email" name="email">
             <Input readOnly />
           </Form.Item>
@@ -556,6 +562,9 @@ const ListTeacher = () => {
             <Input />
           </Form.Item>
           <Form.Item label="Mã số giảng viên" name="number">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Bằng cấp" name="degree">
             <Input />
           </Form.Item>
           <Form.Item label="Email" name="email">

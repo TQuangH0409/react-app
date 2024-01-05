@@ -16,14 +16,17 @@ const Sidebar = ({ user }) => {
       </Link>
       <hr className="sidebar-divider my-0"></hr>
 
+      <hr className="sidebar-divider my-0"></hr>
+
+      {/* <div > */}
       {/*admin */}
-      {localStorage.getItem("roles") === "SA" && (
-        <Menu mode="inline">
-          <Menu.Item key="list-student">
-            Danh sách sinh viên
-            <Link to="/admin/list-student"></Link>
-          </Menu.Item>
-          <hr className="sidebar-divider my-0"></hr>
+      {/* {user.isAdmin &&*/}     
+       {(localStorage.getItem("roles") === "SA") && <Menu mode='inline'>
+        <Menu.Item key="list-student">
+          Danh sách sinh viên
+          <Link to="/admin/list-student"></Link>
+        </Menu.Item>
+        <hr className="sidebar-divider my-0"></hr>
 
           <Menu.Item key="list-teacher">
             Danh sách giảng viên
@@ -37,19 +40,18 @@ const Sidebar = ({ user }) => {
           </Menu.Item>
           <hr className="sidebar-divider my-0"></hr>
 
-          <Menu.Item key="assigned-instructions">
-            Phân công hướng dẫn
-            <Link to="/admin/assigned-instructions"></Link>
-          </Menu.Item>
-          <hr className="sidebar-divider my-0"></hr>
+        <Menu.Item key="assigned-instructions">
+          Phân công hướng dẫn
+          <Link to="/admin/assigned-instructions"></Link>
+        </Menu.Item>
+        <hr className="sidebar-divider my-0"></hr>
 
-          <Menu.Item key="assign-criticism">
-            Phân công phản biện
-            <Link to="/admin/assign-criticism"></Link>
-          </Menu.Item>
-          <hr className="sidebar-divider my-0"></hr>
-        </Menu>
-      )}
+        <Menu.Item key="assign-criticism">
+          Phân công phản biện
+          <Link to="/admin/assign-criticism"></Link>
+        </Menu.Item>
+        <hr className="sidebar-divider my-0"></hr>
+      </Menu>}
       {/*student */}
       {localStorage.getItem("roles") === "S" && (
         <Menu>

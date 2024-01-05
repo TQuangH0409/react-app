@@ -12,6 +12,7 @@ const AssignedInstruction = () => {
   const [page, setPage] = useState(1);
   const [paginationSize, setPaginationSize] = useState(10)
   const [value, setValue] = useState('');
+  const [semester, setSemester] = useState('20231');
   const subTable = [];
 
   const expandedRowRenderFunc = (datas) => {
@@ -68,7 +69,7 @@ const AssignedInstruction = () => {
     {
       title: 'STT',
       key: 'index',
-      render: (text: string, record: any, index: number) => (page - 1) * paginationSize + index + 1,
+      render: (text, record, index) => (page - 1) * paginationSize + index + 1,
     },
     {
       title: "Họ và tên",
@@ -167,7 +168,7 @@ return (
         onClick={async () => {
           const res = await getAssInstruct(limit, "DRAFT");
           setInstruct(res.assignment);
-          
+
         }}
       >
         Tạo nháp

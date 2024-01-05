@@ -7,6 +7,7 @@ import {
   setInfoInstruct,
   setInfoProject,
   setInfoStudent,
+  setInfoReview,
 } from "../../hook/slice";
 import { getAss } from "../../apis/apiAss";
 import { EditOutlined, VerticalAlignTopOutlined } from "@ant-design/icons";
@@ -63,6 +64,8 @@ const InfoStudentProject = () => {
   const [student, setStudent] = useState({});
   const [instruct, setInstruct] = useState(undefined);
   const [review, setReview] = useState(undefined);
+  const [project, setProject] = useState(undefined);
+  const [projectDetail, setProjectDetail] = useState(undefined);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -70,17 +73,37 @@ const InfoStudentProject = () => {
       try {
         const s = await getUserById();
         setStudent(s);
+
         const ass = await getAss({
           student: localStorage.getItem("userId"),
           type: "INSTRUCT",
         });
-        const instruct = await getUserById(ass?.teacher.id);
-        setInstruct(instruct);
+        if (ass) {
+          const instruct = await getUserById(ass?.teacher.id);
+          setInstruct(instruct);
+        }
 
-        const project = await getProjectByStudent();
-        const projectDetail = await getProjectById(project.id);
+        const rev = await getAss({
+          student: localStorage.getItem("userId"),
+          type: "REVIEW",
+        });
+
+        if (rev) {
+          const review = await getUserById(rev?.teacher.id);
+          setReview(review);
+        }
+        const project = await getProjectByStudent(s.id);
+        if (project) {
+          setProject(project);
+
+          const projectDetail = await getProjectById(project.id);
+
+          setProjectDetail(projectDetail);
+        }
+
         dispatch(setInfoStudent(s));
         dispatch(setInfoInstruct(instruct));
+        dispatch(setInfoReview(review));
         dispatch(setInfoProject(projectDetail));
       } catch (error) {}
     };
@@ -105,7 +128,7 @@ const InfoStudentProject = () => {
               <Col span={8}>
                 <div className="avatar">
                   <img
-                    src="https://drive.google.com/uc?id=1k6R3GiOpZB6YZSPmvCuJQSNtk1kTgY1s&export=download"
+                    src={instruct.avatar}
                     alt="Italian Trulli"
                     style={{
                       width: "100%",
@@ -120,7 +143,7 @@ const InfoStudentProject = () => {
                   <Col span={24}>
                     <Row span={24} style={{ marginBottom: "5px" }}>
                       <Col span={8}>Họ và tên:</Col>
-                      <Col span={16}>{instruct.fullname}</Col>
+                      <Col span={16}>{instruct?.fullname}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -129,7 +152,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Mã số giảng viên:</Col>
-                      <Col span={16}>{instruct.number}</Col>
+                      <Col span={16}>{instruct?.number}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -138,7 +161,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Cấp bậc:</Col>
-                      <Col span={16}>{instruct.class}</Col>
+                      <Col span={16}>{instruct?.class}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -147,7 +170,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Trường/Viện:</Col>
-                      <Col span={16}>{instruct.gen}</Col>
+                      <Col span={16}>{instruct?.school}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -156,7 +179,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Email:</Col>
-                      <Col span={16}>{instruct.email}</Col>
+                      <Col span={16}>{instruct?.email}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -166,8 +189,8 @@ const InfoStudentProject = () => {
                     <Row span={24}>
                       <Col span={8}>Lĩnh vực nghiên cứu:</Col>
                       <Col span={16}>
-                        {instruct.research_area &&
-                          instruct.research_area.map((r, idx) => {
+                        {instruct?.research_area &&
+                          instruct?.research_area.map((r, idx) => {
                             return (
                               <Col span={24} key={instruct + idx}>
                                 {r.name}
@@ -188,7 +211,7 @@ const InfoStudentProject = () => {
               <Col span={8}>
                 <div className="avatar">
                   <img
-                    src="https://drive.google.com/uc?id=1k6R3GiOpZB6YZSPmvCuJQSNtk1kTgY1s&export=download"
+                    src={review?.avatar}
                     alt="Italian Trulli"
                     style={{
                       width: "100%",
@@ -203,7 +226,7 @@ const InfoStudentProject = () => {
                   <Col span={24}>
                     <Row span={24} style={{ marginBottom: "5px" }}>
                       <Col span={8}>Họ và tên:</Col>
-                      <Col span={16}>{review.fullname}</Col>
+                      <Col span={16}>{review?.fullname}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -212,7 +235,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Mã số giảng viên:</Col>
-                      <Col span={16}>{review.number}</Col>
+                      <Col span={16}>{review?.number}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -221,7 +244,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Cấp bậc:</Col>
-                      <Col span={16}>{review.class}</Col>
+                      <Col span={16}>{review?.class}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -230,7 +253,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Trường/Viện:</Col>
-                      <Col span={16}>{review.gen}</Col>
+                      <Col span={16}>{review?.schooln}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -239,7 +262,7 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Email:</Col>
-                      <Col span={16}>{review.gen}</Col>
+                      <Col span={16}>{review?.email}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -248,7 +271,16 @@ const InfoStudentProject = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Lĩnh vực nghiên cứu:</Col>
-                      <Col span={16}>{review.gen}</Col>
+                      <Col span={16}>
+                        {review?.research_area &&
+                          review?.research_area.map((r, idx) => {
+                            return (
+                              <Col span={24} key={review + idx}>
+                                {r.name}
+                              </Col>
+                            );
+                          })}
+                      </Col>
                     </Row>
                   </Col>
                 </Row>
@@ -259,53 +291,81 @@ const InfoStudentProject = () => {
       </Row>
       <Row>
         <Col className="info-student-title" span={24}>
-          Thông tin đồ án
+          {`Thông tin đồ án ${projectDetail ? "" : `(chưa có đồ án)`}`}
         </Col>
       </Row>
       <Row>
         <Col span={12}>
           <Row style={{ margin: "20px" }}>
             <Col span={8}>Tên đề tài:</Col>
-            <Col span={12}>
-              Thiết kế dịch vụ quản trị dữ liệu khách hàng và sản phẩm phục vụ
-              cho các phần mềm CPFR
-            </Col>
+            <Col span={12}>{projectDetail?.name}</Col>
           </Row>
           <Row style={{ margin: "20px" }}>
             <Col span={8}>
               Source code
-              <EditOutlined
+              {projectDetail && <EditOutlined
                 onClick={handleEditClick}
                 style={{ marginLeft: 8 }}
-              />
+              />}
               :
             </Col>
             <Col span={12}>
-              <a href="https://github.com/quangh0409/Decision_help_system_fe/blob/main/src/component/project/index.tsx">
-                https://github.com/quangh0409/Decision_help_system_fe/blob/main/src/component/project/index.tsx
+              <a href={projectDetail ? projectDetail.source_code : ""}>
+                {projectDetail ? projectDetail.source_code : ""}
               </a>
             </Col>
           </Row>
           <Row style={{ margin: "20px" }}>
             <Col span={8} style={{ display: "flex" }}>
               <p>Báo cáo</p>
-              <Dragger
+              {projectDetail && <Dragger
                 {...uploadProps}
                 style={{
                   maxHeight: "24px",
                   width: "24px",
                   display: "flex",
                   alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <VerticalAlignTopOutlined />
-              </Dragger>
+              </Dragger>}
               <p>:</p>
             </Col>
             <Col span={12}>
-              Thiết kế dịch vụ quản trị dữ liệu khách hàng và sản phẩm phục vụ
-              cho các phần mềm CPFR
+              <Row>
+              {projectDetail && projectDetail?.report && projectDetail.map(r => {
+                return  <Col span={8} style={{ display: "flex" }}>
+                <p>{r.name}</p>
+                {projectDetail && <Dragger
+                  {...uploadProps}
+                  style={{
+                    maxHeight: "24px",
+                    width: "24px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <VerticalAlignTopOutlined />
+                </Dragger>}
+                <p>:</p>
+              </Col>
+              })}
+              </Row>
             </Col>
+          </Row>
+          <Row style={{ margin: "20px" }}>
+            <Col span={8}>Điểm quá trình:</Col>
+            <Col span={12}>{projectDetail?.rate?.mark_mid}</Col>
+          </Row>
+          <Row style={{ margin: "20px" }}>
+            <Col span={8}>Điểm cuối kì:</Col>
+            <Col span={12}>{projectDetail?.rate?.mark_final}</Col>
+          </Row>
+          <Row style={{ margin: "20px" }}>
+            <Col span={8}>Đánh giá:</Col>
+            <Col span={12}>{projectDetail?.rate?.comment}</Col>
           </Row>
         </Col>
       </Row>

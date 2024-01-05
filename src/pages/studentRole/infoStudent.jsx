@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Col, Row } from "antd";
 import "./infoStudent.css";
-import { getUserById } from "../../apis/apiStudent";
+import { getUserById, getAvatar } from "../../apis/apiStudent";
 import { getAss } from "../../apis/apiAss";
 import { getProjectById, getProjectByStudent } from "../../apis/apiProject";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,51 +10,63 @@ import {
   setCheck,
   setInfoInstruct,
   setInfoProject,
+  setInfoReview,
   setInfoStudent,
+  setIsShow,
 } from "../../hook/slice";
 import { EditOutlined } from "@ant-design/icons";
 import UpdateStudent from "./updateStudent";
 
 const InfoStudent = () => {
   const [student, setStudent] = useState({});
+  const [avatarStudent, setAvatarStudent] = useState();
   const [instruct, setInstruct] = useState(undefined);
   const [review, setReview] = useState(undefined);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const dispatch = useDispatch();
-
+  const isShow = useSelector((state) => {
+    return state.store.isShow;
+  });
   useEffect(() => {
     const fetchData = async () => {
       try {
         const s = await getUserById();
         setStudent(s);
+
         const ass = await getAss({
           student: localStorage.getItem("userId"),
           type: "INSTRUCT",
         });
-        const instruct = await getUserById(ass?.teacher.id);
-        setInstruct(instruct);
+        if (ass) {
+          const instruct = await getUserById(ass?.teacher.id);
+          setInstruct(instruct);
+        }
+
+        const rev = await getAss({
+          student: localStorage.getItem("userId"),
+          type: "REVIEW",
+        });
+
+        if (rev) {
+          const review = await getUserById(rev?.teacher.id);
+          setReview(review);
+        }
 
         const project = await getProjectByStudent();
-        const projectDetail = await getProjectById(project.id);
+        if (project) {
+          const projectDetail = await getProjectById(project.id);
+          dispatch(setInfoProject(projectDetail));
+        }
         dispatch(setInfoStudent(s));
         dispatch(setInfoInstruct(instruct));
-        // dispatch(setInfoProject(projectDetail));
-        dispatch(setCheck(1));
+        dispatch(setInfoReview(review));
       } catch (error) {
         console.log("🚀 ~ file: updateStudent.jsx:18 ", error);
       }
     };
 
     fetchData();
-  }, []);
-  const studentT = useSelector((state) => {
-    console.log(
-      "🚀 ~ file: updateStudent.jsx:18 ~ UpdateStudent ~ student:",
-      state.store.student,
-      state.store.check
-    );
-    return state.store.student;
-  });
+  }, [isShow]);
+
   return (
     <div>
       <Row>
@@ -62,19 +74,19 @@ const InfoStudent = () => {
           Thông tin sinh viên
           <EditOutlined
             onClick={() => {
-              setIsModalOpen(true);
+              dispatch(setIsShow(true));
             }}
           />
         </Col>
       </Row>
-      {isModalOpen && <UpdateStudent isModalOpen={isModalOpen} />}
+      {isShow && <UpdateStudent isModalOpen={isShow} />}
       <Row>
         <Col span={12}>
           <Row>
             <Col span={8}>
               <div className="avatar">
                 <img
-                  src="https://drive.google.com/uc?id=1k6R3GiOpZB6YZSPmvCuJQSNtk1kTgY1s&export=download"
+                  src={student.avatar}
                   alt="Italian Trulli"
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
@@ -178,7 +190,7 @@ const InfoStudent = () => {
               <Col span={8}>
                 <div className="avatar">
                   <img
-                    src="https://drive.google.com/uc?id=1k6R3GiOpZB6YZSPmvCuJQSNtk1kTgY1s&export=download"
+                    //src={instruct.avatar}
                     alt="Italian Trulli"
                     style={{
                       width: "100%",
@@ -193,7 +205,7 @@ const InfoStudent = () => {
                   <Col span={24}>
                     <Row span={24} style={{ marginBottom: "5px" }}>
                       <Col span={8}>Họ và tên:</Col>
-                      <Col span={16}>{instruct.fullname}</Col>
+                      <Col span={16}>{instruct?.fullname}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -202,7 +214,7 @@ const InfoStudent = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Mã số giảng viên:</Col>
-                      <Col span={16}>{instruct.number}</Col>
+                      <Col span={16}>{instruct?.number}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -211,7 +223,7 @@ const InfoStudent = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Cấp bậc:</Col>
-                      <Col span={16}>{instruct.class}</Col>
+                      <Col span={16}>{instruct?.class}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -220,7 +232,7 @@ const InfoStudent = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Trường/Viện:</Col>
-                      <Col span={16}>{instruct.gen}</Col>
+                      <Col span={16}>{instruct?.gen}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -229,7 +241,7 @@ const InfoStudent = () => {
                   >
                     <Row span={24}>
                       <Col span={8}>Email:</Col>
-                      <Col span={16}>{instruct.email}</Col>
+                      <Col span={16}>{instruct?.email}</Col>
                     </Row>
                   </Col>
                   <Col
@@ -260,7 +272,7 @@ const InfoStudent = () => {
             <Col span={8}>
               <div className="avatar">
                 <img
-                  src="https://drive.google.com/uc?id=1k6R3GiOpZB6YZSPmvCuJQSNtk1kTgY1s&export=download"
+                  //src={review.avatar}
                   alt="Italian Trulli"
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
@@ -271,7 +283,7 @@ const InfoStudent = () => {
                 <Col span={24}>
                   <Row span={24} style={{ marginBottom: "5px" }}>
                     <Col span={8}>Họ và tên:</Col>
-                    <Col span={16}>{student.fullname}</Col>
+                    <Col span={16}>{review?.fullname}</Col>
                   </Row>
                 </Col>
                 <Col
@@ -280,7 +292,7 @@ const InfoStudent = () => {
                 >
                   <Row span={24}>
                     <Col span={8}>Mã số giảng viên:</Col>
-                    <Col span={16}>{student.number}</Col>
+                    <Col span={16}>{review?.number}</Col>
                   </Row>
                 </Col>
                 <Col
@@ -289,7 +301,7 @@ const InfoStudent = () => {
                 >
                   <Row span={24}>
                     <Col span={8}>Cấp bậc:</Col>
-                    <Col span={16}>{student.class}</Col>
+                    <Col span={16}>{review?.class}</Col>
                   </Row>
                 </Col>
                 <Col
@@ -298,7 +310,7 @@ const InfoStudent = () => {
                 >
                   <Row span={24}>
                     <Col span={8}>Trường/Viện:</Col>
-                    <Col span={16}>{student.gen}</Col>
+                    <Col span={16}>{review?.school}</Col>
                   </Row>
                 </Col>
                 <Col
@@ -307,7 +319,7 @@ const InfoStudent = () => {
                 >
                   <Row span={24}>
                     <Col span={8}>Email:</Col>
-                    <Col span={16}>{student.gen}</Col>
+                    <Col span={16}>{review?.email}</Col>
                   </Row>
                 </Col>
                 <Col
@@ -316,7 +328,16 @@ const InfoStudent = () => {
                 >
                   <Row span={24}>
                     <Col span={8}>Lĩnh vực nghiên cứu:</Col>
-                    <Col span={16}>{student.gen}</Col>
+                    <Col span={16}>
+                      {review?.research_area &&
+                        review?.research_area.map((r, idx) => {
+                          return (
+                            <Col span={24} key={instruct + idx}>
+                              {r.name}
+                            </Col>
+                          );
+                        })}
+                    </Col>
                   </Row>
                 </Col>
               </Row>
