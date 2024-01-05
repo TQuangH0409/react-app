@@ -1,6 +1,6 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import DefaultLayout from "./Layout/defaultLayout/Layout";
+import DefaultLayout from "./Layout/defaultLayout/Layout.jsx";
 import { PublicRoutes, Login,updatePassword, forgetPassword } from "./routes/index.js";
 import { Switch } from "antd";
 import { useSelector } from "react-redux";

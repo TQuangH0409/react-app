@@ -63,6 +63,7 @@ const UpdateStudent = (props) => {
   const student = useSelector((state) => {
     return state.store.student;
   });
+  console.log(student)
 
   const dataSelect =
     dataResearch?.length &&
@@ -88,7 +89,7 @@ const UpdateStudent = (props) => {
   useEffect(() => {
     if (student) {
       update.setFieldsValue(student);
-      const researchAreas = student.research_area.map(area => area.number);
+      const researchAreas = student.research_area?.map(area => area.number);
       update.setFieldsValue({ research_area: researchAreas });
     }
   }, [student, update]);

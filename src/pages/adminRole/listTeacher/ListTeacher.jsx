@@ -34,6 +34,7 @@ const ListTeacher = () => {
   const [modalView, setModalView] = useState(false);
   const [modalUpdate, setModalUpdate] = useState(false);
   const [modalExcel, setModalExcel] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const Option = Select.Option;
   const [page, setPage] = useState(1);
@@ -86,6 +87,7 @@ const ListTeacher = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true)
         const data = await getAllResearchArea();
         setDataResearch(data)
       } catch (error) {
@@ -93,6 +95,7 @@ const ListTeacher = () => {
       }
     };
     fetchData();
+    setLoading(false)
   }, []);
 
   const props = {
@@ -146,17 +149,22 @@ const ListTeacher = () => {
         const [headers, ...rows] = formattedData;
 
         // Create table data
-        const tableData = rows.map((row, index) => ({
-
-          ...row.reduce((acc, value, colIndex) => {
-            acc[headers[colIndex]] = value;
+        const tableData = rows.map((row, index) => {
+          return row.reduce((acc, value, colIndex) => {
+            if (headers[colIndex] === 'research_area' && typeof value === 'string') {
+              const researchAreas = value.split(',').map(area => area.trim());
+              acc[headers[colIndex]] = researchAreas.map(area => ({ number: area }));
+            } else {
+              acc[headers[colIndex]] = value;
+            }
             return acc;
-          }, {}),
-          roles: ['T'],
-          position: "TEACHER",
-          is_active: true,
-          password: "1",
-        }));
+          }, {
+            roles: ['T'],
+            position: "TEACHER",
+            is_active: true,
+            password: "1",
+          });
+        });
 
         setTableDataExcel(tableData);
 
@@ -250,9 +258,10 @@ const ListTeacher = () => {
       const body = { is_active: false }
       console.log(id, body)
       const res = await deleteUserById(id, body)
+      setLoading(true)
       const data = await getAllUserByPosition("TEACHER");
       setData(data);
-      console.log(data)
+      setLoading(false);
 
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -289,7 +298,7 @@ const ListTeacher = () => {
   }, [dataTeacher, detail]);
 
   const handleOk = async () => {
-
+    update.validateFields();
     const formValues = await update.validateFields();
     const researchAreaArray = formValues.research_area.map(area => ({ number: area }));
     console.log("Research Area Objects:", researchAreaArray);
@@ -303,15 +312,18 @@ const ListTeacher = () => {
     const res = await updateUserById(id, values);
     update.resetFields()
     setModalUpdate(false)
+    setLoading(true)
     const data = await getAllUserByPosition("TEACHER");
     setData(data);
+    setLoading(false)
   };
 
   const handleCreate = async () => {
+    create.validateFields();
     try {
       // Kiểm tra và lấy giá trị từ form
       const formValues = await create.validateFields();
-      const researchAreaArray = formValues.research_area.map(area => ({ number: area }));
+      const researchAreaArray = formValues.research_area?.map(area => ({ number: area }));
 
       // Tạo một đối tượng mới với các trường bổ sung
       const additionalFields = {
@@ -328,8 +340,10 @@ const ListTeacher = () => {
       const res = await createUser(values);
       create.resetFields()
       setModal1Open(false)
+      setLoading(true)
       const data = await getAllUserByPosition("TEACHER");
       setData(data);
+      setLoading(false)
     } catch (error) {
       console.error('Error updating user:', error);
       // Xử lý lỗi nếu cần
@@ -341,32 +355,36 @@ const ListTeacher = () => {
     console.log(res)
     setModalExcel(false)
     setModal2Open(false)
+    setLoading(true)
     const data = await getAllUserByPosition("TEACHER");
-    console.log(res)
     setData(data);
+    setLoading(false)
   }
 
   const onSearch = (value) => {
+    setLoading(true)
     const normalizedValue = unorm.nfd(value); // Chuẩn hóa văn bản đầu vào
     const filterData = data.filter((o) =>
-    Object.keys(o).some((k) => {
-      // Nếu giá trị của thuộc tính là mảng đối tượng
-      if (Array.isArray(o[k])) {
-        return o[k].some((nestedObj) =>
-          Object.values(nestedObj).some((nestedValue) =>
-            unorm.nfd(String(nestedValue)).toLowerCase().includes(normalizedValue.toLowerCase())
-          )
-        );
-      }
-      // Nếu giá trị của thuộc tính không phải là mảng đối tượng
-      return unorm.nfd(String(o[k])).toLowerCase().includes(normalizedValue.toLowerCase());
-    })
-  );
+      Object.keys(o).some((k) => {
+        // Nếu giá trị của thuộc tính là mảng đối tượng
+        if (Array.isArray(o[k])) {
+          return o[k].some((nestedObj) =>
+            Object.values(nestedObj).some((nestedValue) =>
+              unorm.nfd(String(nestedValue)).toLowerCase().includes(normalizedValue.toLowerCase())
+            )
+          );
+        }
+        // Nếu giá trị của thuộc tính không phải là mảng đối tượng
+        return unorm.nfd(String(o[k])).toLowerCase().includes(normalizedValue.toLowerCase());
+      })
+    );
     setData(filterData);
+    setLoading(false)
   };
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true)
       if (value.trim() === '') {
         // Fetch all users with the position "STUDENT"
         const newData = await getAllUserByPosition("TEACHER");
@@ -375,6 +393,7 @@ const ListTeacher = () => {
     };
 
     fetchData();
+    setLoading(false)
     setPage(1);
   }, [value]);
 
@@ -400,27 +419,27 @@ const ListTeacher = () => {
             layout="vertical"
             form={create}
           >
-            <Form.Item label="Họ và tên" name="fullname">
+            <Form.Item label="Họ và tên" name="fullname" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item label="CCCD" name="cccd">
+            <Form.Item label="CCCD" name="cccd" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item label="Bằng cấp" name="degree">
+            <Form.Item label="Bằng cấp" name="degree" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item label="Mã số giảng viên" name="number">
+            <Form.Item label="Mã số giảng viên" name="number" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item label="Email" name="email">
+            <Form.Item label="Email" name="email" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item label="Trường/Viện:" name="school">
+            <Form.Item label="Trường/Viện:" name="school" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Select options={optionSchool}>
 
               </Select>
             </Form.Item>
-            <Form.Item label="Lĩnh vực nghiên cứu" name="research_area">
+            <Form.Item label="Lĩnh vực nghiên cứu" name="research_area" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Select mode='multiple' options={dataSelect}>
 
               </Select>
@@ -472,7 +491,10 @@ const ListTeacher = () => {
               defaultPageSize: 10, hideOnSinglePage: true, showSizeChanger: true
             }}
             columns={columnsExcel}
-            dataSource={tableDataExcel}
+            dataSource={tableDataExcel.map(record => ({
+              ...record,
+              research_area: record.research_area.map(area => area.number).join(', ')
+            }))}
           />
         </Modal>
 
@@ -481,7 +503,7 @@ const ListTeacher = () => {
           placeholder="Tìm kiếm theo tên"
           value={value}
           onSearch={onSearch}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {setValue(e.target.value); }}
           style={{
             width: 500,
             paddingLeft: 10,
@@ -502,6 +524,7 @@ const ListTeacher = () => {
           }}
           columns={columns}
           dataSource={dataTable}
+          loading={loading}
         />
       </div>
 
@@ -516,26 +539,26 @@ const ListTeacher = () => {
       >
         <Form layout="vertical"
           form={detail}>
-          <Form.Item label="Họ và tên" name="fullname" fieldId='fullname'>
+          <Form.Item label="Họ và tên" name="fullname" fieldId='fullname' >
             <Input readOnly />
           </Form.Item>
-          <Form.Item label="CCCD" name="cccd">
+          <Form.Item label="CCCD" name="cccd" >
             <Input readOnly />
           </Form.Item>
-          <Form.Item label="Mã số giảng viên" name="number">
+          <Form.Item label="Mã số giảng viên" name="number" >
             <Input readOnly />
           </Form.Item>
-          <Form.Item label="Bằng cấp" name="degree">
+          <Form.Item label="Bằng cấp" name="degree" >
             <Input readOnly />
           </Form.Item>
-          <Form.Item label="Email" name="email">
+          <Form.Item label="Email" name="email" >
             <Input readOnly />
           </Form.Item>
-          <Form.Item label="Trường/Viện:" name="school">
+          <Form.Item label="Trường/Viện:" name="school" >
             <Select disabled='true'>
             </Select>
           </Form.Item>
-          <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area">
+          <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area" >
             <Select mode='multiple' disabled='true'>
 
             </Select>
@@ -555,26 +578,26 @@ const ListTeacher = () => {
       >
         <Form layout="vertical"
           form={update}>
-          <Form.Item label="Họ và tên" name="fullname" fieldId='fullname'>
+          <Form.Item label="Họ và tên" name="fullname" fieldId='fullname' rules={[{ required: true, message: 'Please input your content!' }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="CCCD" name="cccd">
+          <Form.Item label="CCCD" name="cccd" rules={[{ required: true, message: 'Please input your content!' }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="Mã số giảng viên" name="number">
+          <Form.Item label="Mã số giảng viên" name="number" rules={[{ required: true, message: 'Please input your content!' }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="Bằng cấp" name="degree">
+          <Form.Item label="Bằng cấp" name="degree" rules={[{ required: true, message: 'Please input your content!' }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="Email" name="email">
+          <Form.Item label="Email" name="email" rules={[{ required: true, message: 'Please input your content!' }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="Trường/Viện:" name="school">
+          <Form.Item label="Trường/Viện:" name="school" rules={[{ required: true, message: 'Please input your content!' }]}>
             <Select options={optionSchool} >
             </Select>
           </Form.Item>
-          <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area">
+          <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area" rules={[{ required: true, message: 'Please input your content!' }]}>
             <Select mode='multiple' options={dataSelect}>
 
             </Select>

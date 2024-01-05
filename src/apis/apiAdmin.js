@@ -1,3 +1,4 @@
+
 import axiosData from "./axiosData";
 
 const optionYear = [
@@ -146,8 +147,14 @@ const createUserByFile = async (body) => {
   return res.data
 }
 
+const getListAssign = async (semester, type) => {
+  const res = await axiosData().get(`/assignments/semester/${semester}?type=${type}`)
+  return res.data
+}
+
+
 export { getAllUserByPosition, getUserById, getAllResearchArea, 
   optionYear, optionSchool, updateUserById, 
   createUser, deleteUserById, createResearchArea,
   deleteResearchArea, updateResearchArea, getResearchAreaById,
- createUserByFile}
+ createUserByFile, getListAssign}

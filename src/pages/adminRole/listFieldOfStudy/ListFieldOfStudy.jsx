@@ -32,6 +32,7 @@ const ListFieldOfStudy = () => {
   const [detail] = Form.useForm();
   const [update] = Form.useForm();
   const [create] = Form.useForm();
+  const [loading, setLoading] = useState(true);
 
   const [modal1Open, setModal1Open] = useState(false);
   const [modal2Open, setModal2Open] = useState(false);
@@ -108,9 +109,10 @@ const ListFieldOfStudy = () => {
   const handleDelete = async (id) => {
     try {
       const res = await deleteResearchArea(id)
+      setLoading(true)
       const data = await getAllResearchArea();
       setData(data);
-      console.log(data)
+      setLoading(false)
 
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -150,8 +152,10 @@ const ListFieldOfStudy = () => {
     const res = await updateResearchArea(id, formValues);
     update.resetFields()
     setModalUpdate(false)
+    setLoading(true)
     const data = await getAllResearchArea();
     setData(data);
+    setLoading(false)
 };
 
   const handleCreate = async () => {
@@ -161,26 +165,32 @@ const ListFieldOfStudy = () => {
       const res = await createResearchArea(formValues);
       create.resetFields()
       setModal1Open(false)
+      setLoading(true)
       const data = await getAllResearchArea();
       setData(data);
+      setLoading(false)
   };
 
   const onSearch = (value) => {
     const normalizedValue = unorm.nfd(value); // Chuẩn hóa văn bản đầu vào
+    setLoading(true)
     const filterData = data.filter((o) =>
       Object.keys(o).some((k) =>
         unorm.nfd(String(o[k])).toLowerCase().includes(normalizedValue.toLowerCase())
       )
     );
     setData(filterData);
+    setLoading(false)
   };
 
   useEffect(() => {
     const fetchData = async () => {
       if (value.trim() === '') {
         // Fetch all users with the position "STUDENT"
+        setLoading(true)
         const newData = await getAllResearchArea();
         setData(newData);
+        setLoading(false)
       }
     };
 
@@ -246,6 +256,7 @@ const ListFieldOfStudy = () => {
           }}
           columns={columns}
           dataSource={data}
+          loading={loading}
         />
       </div>
 

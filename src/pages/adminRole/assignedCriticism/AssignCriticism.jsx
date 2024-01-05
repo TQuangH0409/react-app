@@ -3,7 +3,7 @@ import { Button, Input, Select, Space, Table } from "antd";
 import unorm from "unorm";
 import { Option } from "antd/es/mentions";
 import { getAssReview } from "../../../apis/apiAss";
-import { getUserById } from "../../../apis/apiAdmin";
+import { getUserById, optionYear, getListAssign } from "../../../apis/apiAdmin";
 
 const AssignCriticism = () => {
   const [review, setReview] = useState([]);
@@ -13,6 +13,8 @@ const AssignCriticism = () => {
   const [page, setPage] = useState(1);
   const [paginationSize, setPaginationSize] = useState(10)
   const [value, setValue] = useState('');
+  const [semester, setSemester] = useState('20231');
+  const [loading, setLoading] = useState(true);
   const subTable = [];
 
   const expandedRowRenderFunc = (datas) => {
@@ -129,6 +131,7 @@ const [data, setData] = useState([]);
   }, [review]);
 
   const onSearch = (value) => {
+    setLoading(true)
     const normalizedValue = unorm.nfd(value); // Chuẩn hóa văn bản đầu vào
     const filterData = data.filter((o) =>
       Object.keys(o).some((k) => {
@@ -145,10 +148,12 @@ const [data, setData] = useState([]);
       })
     );
     setData(filterData);
+    setLoading(false)
   };
   
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true)
       if (value.trim() === '') {
         // Fetch all users with the position "STUDENT"
         getDataCriticism();
@@ -156,8 +161,32 @@ const [data, setData] = useState([]);
     };
   
     fetchData();
+    setLoading(false)
     setPage(1);
   }, [value]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      const res = await getListAssign(semester, "REVIEW")
+      if(res.data.length > 0 ) {
+        setReview(res.assignment);
+        getDataCriticism();
+      }
+      setLoading(false)
+    }
+  })
+
+  const handleSemesterChange = async (selectedSemester) => {
+    setSemester(selectedSemester);
+    setLoading(true)
+    const res = await getListAssign(selectedSemester, "REVIEW")
+    if(res.data.length > 0 ) {
+      setReview(res.assignment);
+      getDataCriticism();
+    }
+    setLoading(false)
+  };
 
   return (
     <div className="list-student mb-4">
@@ -166,10 +195,12 @@ const [data, setData] = useState([]);
           Danh sách phân công giáo viên phản biện
         </h6>
 
-        <div className="select-semester">
-          <span style={{ color: "black", marginLeft: "10px" }}>Kỳ học: </span>
-          <Select defaultValue="20231" style={{ width: 120 }}>
-            <Option value="20231">20231</Option>
+        <div className='select-semester'>
+          <span style={{ color: "black" }} >Kỳ học: </span>
+          <Select defaultValue="20231"
+            onChange={handleSemesterChange}
+            options={optionYear}
+            style={{ width: 120 }} >
           </Select>
         </div>
 
@@ -188,7 +219,8 @@ const [data, setData] = useState([]);
           <Button style={{ margin: "0 5px 0 5px" }}
             type="primary"
             onClick={async () => {
-              const res = await getAssReview(limit, "DRAFT");
+              const res = await getAssReview(limit, "DRAFT", semester);
+              console.log(res)
               setReview(res.assignment);
               if(res.listProject && res.listProject > 0){
                 alert("có giáo viên chưa đk được phân công")
@@ -203,7 +235,7 @@ const [data, setData] = useState([]);
           <Button
             type="primary" style={{ margin: "0" }}
             onClick={async () => {
-              const res = await getAssReview(limit, "SAVE");
+              const res = await getAssReview(limit, "SAVE", semester);
               setReview(res.assignment);
             }}
           >
@@ -216,7 +248,7 @@ const [data, setData] = useState([]);
           placeholder="Tìm kiếm theo tên"
           value={value}
           onSearch={onSearch}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {setValue(e.target.value)}}
           style={{
             width: 300,
             paddingLeft: 10,
@@ -241,6 +273,7 @@ const [data, setData] = useState([]);
           }}
           dataSource={data}
           size="10"
+          loading={loading}
         />
       </div>
     </div>

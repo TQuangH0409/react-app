@@ -164,20 +164,26 @@ export const ListStudent = () => {
         const [headers, ...rows] = formattedData;
 
         // Create table data
-        const tableData = rows.map((row, index) => ({
-
-          ...row.reduce((acc, value, colIndex) => {
-            acc[headers[colIndex]] = value;
+        const tableData = rows.map((row, index) => {
+          return row.reduce((acc, value, colIndex) => {
+            if (headers[colIndex] === 'research_area' && typeof value === 'string') {
+              const researchAreas = value.split(',').map(area => area.trim());
+              acc[headers[colIndex]] = researchAreas.map(area => ({ number: area }));
+            } else {
+              acc[headers[colIndex]] = value;
+            }
             return acc;
-          }, {}),
-          roles: ['S'],
-          position: "STUDENT",
-          is_active: true,
-          password: "1",
-          semester: `${semester}`
-        }));
+          }, {
+            roles: ['S'],
+            position: "STUDENT",
+            is_active: true,
+            password: "1",
+            semester: `${semester}`
+          });
+        });
 
         setTableDataExcel(tableData);
+        console.log(tableData)
 
         // Create columns based on headers
         const tableColumns = headers.map((header) => ({
@@ -197,7 +203,7 @@ export const ListStudent = () => {
     reader.readAsArrayBuffer(file);
   };
 
-  const columns: ColumnsType<DataType> = [
+  const columns = [
     {
       title: "STT",
       key: "index",
@@ -319,6 +325,7 @@ export const ListStudent = () => {
   }, [dataStudent, detail]);
 
   const handleOk = async () => {
+    setLoading(true)
     // Kiểm tra và lấy giá trị từ form
     const formValues = await update.validateFields();
     const researchAreaArray = formValues.research_area.map(area => ({ number: area }));
@@ -339,6 +346,7 @@ export const ListStudent = () => {
   };
 
   const handleCreate = async () => {
+    create.validateFields();
     try {
       // Kiểm tra và lấy giá trị từ form
       const formValues = await create.validateFields();
@@ -353,12 +361,12 @@ export const ListStudent = () => {
         research_area: researchAreaArray,
         semester: `${semester}`
       };
-
       // Kết hợp formValues và additionalFields
       const values = { ...formValues, ...additionalFields };
       const res = await createUser(values);
       create.resetFields()
       setModal1Open(false)
+      setLoading(true)
       const data = await getAllUserByPosition(`STUDENT&semester=${semester}`);
       setData(data);
       setLoading(false);
@@ -369,14 +377,18 @@ export const ListStudent = () => {
 
   const handleCreateUserByFile = async () => {
     const body = tableDataExcel
+    console.log(body)
     const res = await createUserByFile(body);
     setModalExcel(false)
     setModal2Open(false)
+    setLoading(true)
     const data = await getAllUserByPosition(`STUDENT&semester=${semester}`);
     setData(data);
+    setLoading(false)
   }
 
   const onSearch = (value) => {
+    setLoading(true)
     const normalizedValue = unorm.nfd(value); // Chuẩn hóa văn bản đầu vào
     const filterData = data.filter((o) =>
     Object.keys(o).some((k) => {
@@ -399,8 +411,10 @@ export const ListStudent = () => {
     const fetchData = async () => {
       if (value.trim() === '') {
         // Fetch all users with the position "STUDENT"
+        setLoading(true)
         const newData = await getAllUserByPosition(`STUDENT&semester=${semester}`);
         setData(newData);
+        setLoading(false)
       }
     };
 
@@ -410,8 +424,10 @@ export const ListStudent = () => {
 
   const handleSemesterChange = async (selectedSemester) => {
     setSemester(selectedSemester);
+    setLoading(true)
     const data = await getAllUserByPosition(`STUDENT&semester=${selectedSemester}`);
     setData(data);
+    setLoading(false)
   };
 
   return (
@@ -437,29 +453,29 @@ export const ListStudent = () => {
           onCancel={() => setModal1Open(false)}
         >
           <Form form={create} layout="vertical">
-            <Form.Item label="Họ và tên" name="fullname" fieldId='fullname'>
+            <Form.Item label="Họ và tên" name="fullname" fieldId='fullname' rules={[{ required: true, message: 'Please input your content!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item label="CCCD" name="cccd">
+            <Form.Item label="CCCD" name="cccd" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item label="Mã số sinh viên" name="number">
+            <Form.Item label="Mã số sinh viên" name="number" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item label="Khóa" name="gen">
+            <Form.Item label="Khóa" name="gen" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item label="Lớp" name="class">
+            <Form.Item label="Lớp" name="class" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item label="Email" name="email">
+            <Form.Item label="Email" name="email" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item label="Trường/Viện:" name="school">
+            <Form.Item label="Trường/Viện:" name="school" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Select options={optionSchool} >
               </Select>
             </Form.Item>
-            <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area">
+            <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area" rules={[{ required: true, message: 'Please input your content!' }]}>
               <Select mode='multiple' options={dataSelect}>
 
               </Select>
@@ -516,7 +532,10 @@ export const ListStudent = () => {
               defaultPageSize: 10, hideOnSinglePage: true, showSizeChanger: true
             }}
             columns={columnsExcel}
-            dataSource={tableDataExcel}
+            dataSource={tableDataExcel.map(record => ({
+              ...record,
+              research_area: record.research_area?.map(area => area.number).join(', ')
+            }))}
           />
         </Modal>
 
@@ -536,7 +555,7 @@ export const ListStudent = () => {
           placeholder="Tìm kiếm theo tên"
           value={value}
           onSearch={onSearch}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {setValue(e.target.value);}}
           style={{
             width: 500,
             paddingLeft: 10,
