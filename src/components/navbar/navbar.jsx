@@ -2,20 +2,32 @@ import React, { useEffect, useState } from "react";
 import { Dropdown, Space } from "antd";
 import "./navbar.css";
 import { Link } from "react-router-dom";
-import { getTeacherById } from "../../apis/apiTeacher";
+import { getTeacherOrStudentById } from "../../apis/apiTeacher";
 
 const Navbar = () => {
-  const [teacherName, setTeacherName] = useState("");
+  const [teacherInfo, setTeacherInfo] = useState({});
+  const [isReload, setIsReload] = useState(true);
 
   useEffect(() => {
-    setTeacherName(localStorage.getItem("fullname"));
-    console.log(teacherName);
-  }, [localStorage.getItem("fullname")]);
+    const fetchData = async () => {
+      try {
+        const teacher = await getTeacherOrStudentById(
+          localStorage.getItem("userId")
+        );
+        setTeacherInfo(teacher);
+      } catch (error) {
+        console.error("Error fetching student data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleLogOut = () => {
     localStorage.removeItem("fullname");
     localStorage.removeItem("roles");
     localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+
   };
   const items = [
     {
@@ -40,11 +52,11 @@ const Navbar = () => {
             <a onClick={(e) => e.preventDefault()}>
               <Space>
                 <span className="mr-2 d-none d-lg-inline text-gray-600 small">
-                  {teacherName}
+                  {teacherInfo.fullname}
                 </span>
                 <img
                   className="img-profile rounded-circle"
-                  src="../img/avatar.png"
+                  src={teacherInfo.avatar}
                 ></img>
               </Space>
             </a>

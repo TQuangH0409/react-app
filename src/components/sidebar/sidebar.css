@@ -12,8 +12,11 @@
 }
 
 .sidebar-brand-icon{
-    width: 160px;
     padding: 24px 0 24px 0;
+}
+.sidebar-brand-icon > img {
+    width: 120px;
+    height: 170px;
 }
 
 .sidebar-img{

@@ -1,7 +1,12 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
 import "./infoTeacher.css";
-import { FormOutlined, LoadingOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  FormOutlined,
+  LoadingOutlined,
+  PlusOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import {
   Button,
   Form,
@@ -14,15 +19,16 @@ import {
   message,
 } from "antd";
 import {
-  downFileReport,
   getResearchAreas,
-  getTeacherById,
+  getTeacherOrStudentById,
   postFile,
   putInfoTeacher,
 } from "../../../apis/apiTeacher";
 export default function InfoTeacher() {
-  const [avatar, setAvatar] = useState("");
+  const [modal1Open, setModal1Open] = useState(false);
+
   const [teacherInfo, setTeacherInfo] = useState({});
+  const [avatar, setAvatar] = useState("");
   const [teacherName, setTeacherName] = useState("");
   const [teacherId, setTeacherId] = useState("");
   const [teacherEmail, setTeacherEmail] = useState("");
@@ -33,25 +39,20 @@ export default function InfoTeacher() {
   const [researchArea, setResearchArea] = useState([]);
   const [experience, setExperience] = useState(1);
 
-  // const handleSchoolChange = async (value) => {
-  //   setTeacherSchool(value);
-  //   // const updatedOptions = await fetchResearchFieldOptions(value);
-  //   setResearchArea(updatedOptions);
-  // };
-
   const handleResearchAreaChange = (selectedValues, valueSelected) => {
     try {
-      // Update the selected research areas when the selection changes
-      setTeacherResearchArea(
-        selectedValues.map((value, index) => {
-          // console.log(value, valueSelected.number);
-          return {
-            name: value,
-            number: valueSelected[index].number,
-            experience: experience,
-          };
-        })
-      );
+      if (selectedValues.length <= 3) {
+        console.log(selectedValues, valueSelected);
+        setTeacherResearchArea(
+          selectedValues.map((value, index) => {
+            return {
+              name: value,
+              number: valueSelected[index].number,
+              experience: experience,
+            };
+          })
+        );
+      }
     } catch (error) {
       console.log(error);
     }
@@ -60,8 +61,11 @@ export default function InfoTeacher() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getTeacherById();
+        const data = await getTeacherOrStudentById(
+          localStorage.getItem("userId")
+        );
         setTeacherInfo(data);
+        setAvatar(data.avatar);
         setTeacherName(data.fullname);
         setTeacherId(data.number);
         setTeacherEmail(data.email);
@@ -89,10 +93,29 @@ export default function InfoTeacher() {
     setTeacherSchool(school);
   };
 
+  const [formData, setFormData] = useState(null);
+  const handleUpload = async ({ file, onSuccess, onError }) => {
+    try {
+      const newFormData = new FormData();
+      newFormData.append("file", file);
+      setFormData(newFormData);
+      message.success("Thêm thành công!");
+      onSuccess();
+    } catch (error) {
+      console.error("File upload error:", error);
+      onError();
+    }
+  };
   const handleUpdateTeacher = async () => {
     try {
-      const updatedTeacherData = await putInfoTeacher(teacherInfo.id, {
+      let avatar = {};
+      if (formData) {
+        console.log(formData);
+        avatar = await postFile(formData);
+      }
+      await putInfoTeacher(teacherInfo.id, {
         ...teacherInfo,
+        avatar: avatar.objectId,
         fullname: teacherName,
         number: teacherId,
         email: teacherEmail,
@@ -100,60 +123,59 @@ export default function InfoTeacher() {
       });
       setModal1Open(false);
       setIsReload(!isReload);
-      localStorage.setItem("fullname" , teacherName)
     } catch (error) {
       console.error("Error updating teacher:", error);
     }
   };
 
-  useEffect(() => {
-    const reportFile = async () => {
-      try {
-        const reportLink = await downFileReport(localStorage.getItem("avatarId"));
-        setAvatar(reportLink.webContentLink);
-      } catch (error) {
-        console.error("Error fetching student data:", error);
-      }
-    };
-    reportFile();
-  }, [localStorage.getItem("avatarId")]);
-
-  const handleUpload = async ({ file, onSuccess, onError }) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const response = await postFile(formData);
-      localStorage.setItem("avatarId", response.objectId);
-      message.success("Tải lên thành công");
-      onSuccess();
-    } catch (error) {
-      console.error("File upload error:", error);
-      onError();
+  const getBase64 = (img, callback) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => callback(reader.result));
+    reader.readAsDataURL(img);
+  };
+  const beforeUpload = (file) => {
+    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
+    if (!isJpgOrPng) {
+      message.error("You can only upload JPG/PNG file!");
     }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error("Image must smaller than 2MB!");
+    }
+    return isJpgOrPng && isLt2M;
   };
-
-  const [modal1Open, setModal1Open] = useState(false);
-
-  const [fileList, setFileList] = useState([]);
-
-  const onChange = ({ fileList: newFileList }) => {
-    setFileList(newFileList);
-  };
-  const onPreview = async (file) => {
-    let src = file.url;
-    if (!src) {
-      src = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file.originFileObj);
-        reader.onload = () => resolve(reader.result);
+  const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState();
+  const handleChange = (info) => {
+    if (info.file.status === "uploading") {
+      setLoading(true);
+      return;
+    }
+    if (info.file.status === "done") {
+      getBase64(info.file.originFileObj, (url) => {
+        setLoading(false);
+        setImageUrl(url);
       });
     }
-    const image = new Image();
-    image.src = src;
-    const imgWindow = window.open(src);
-    imgWindow?.document.write(image.outerHTML);
   };
-
+  const uploadButton = (
+    <button
+      style={{
+        border: 0,
+        background: "none",
+      }}
+      type="button"
+    >
+      {loading ? <LoadingOutlined /> : <PlusOutlined />}
+      <div
+        style={{
+          marginTop: 8,
+        }}
+      >
+        Upload
+      </div>
+    </button>
+  );
   return (
     <div className="content__container">
       <div className="content-header py-3">
@@ -177,14 +199,26 @@ export default function InfoTeacher() {
         >
           <Form layout="vertical">
             <Upload
-              action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
+              name="avatar"
               listType="picture-card"
-              fileList={fileList}
-              onChange={onChange}
-              onPreview={onPreview}
+              className="avatar-uploader"
+              showUploadList={false}
+              action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
+              beforeUpload={beforeUpload}
+              onChange={handleChange}
               customRequest={handleUpload}
             >
-              {fileList.length < 1 && "+ Upload"}
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt="avatar"
+                  style={{
+                    width: "100%",
+                  }}
+                />
+              ) : (
+                uploadButton
+              )}
             </Upload>
             <Form.Item label="Họ và tên">
               <Input
@@ -248,7 +282,7 @@ export default function InfoTeacher() {
               <InputNumber
                 min={1}
                 max={20}
-                value={experience}
+                value={teacherResearchArea[0]?.experience}
                 onChange={(value) => setExperience(value)}
               />
             </Form.Item>
@@ -265,36 +299,31 @@ export default function InfoTeacher() {
             <div className="body_content_left">
               <div className="body_content_left--inner">
                 <strong>Họ và tên: </strong>
-                <p className="body_content_left--inner--name">
-                  {teacherInfo.fullname}
-                </p>
+                <p className="body_content_left--inner--name">{teacherName}</p>
               </div>
               <div className="body_content_left--inner">
                 <strong>Mã số giảng viên: </strong>
-                <p>{teacherInfo.number}</p>
+                <p>{teacherId}</p>
               </div>
               <div className="body_content_left--inner">
                 <strong>Email: </strong>
-                <p className="body_content_left--inner--name">
-                  {teacherInfo.email}
-                </p>
+                <p className="body_content_left--inner--name">{teacherEmail}</p>
               </div>
             </div>
 
             <div className="body_content_right">
               <div className="body_content_right--inner">
                 <strong>Cấp bậc: </strong>
-                {/* <p>{teacherInfo?.degree}</p> */}
                 <p>Tiến sĩ</p>
               </div>
               <div className="body_content_right--inner">
                 <strong>Trường/Viện: </strong>
-                <p>CNTT&TT</p>
+                <p>Công nghệ thông tin & truyền thông</p>
               </div>
               <div className="body_content_right--inner">
                 <strong>Lĩnh vực nghiên cứu: </strong>
                 <div>
-                  {teacherInfo.research_area?.map((item) => {
+                  {teacherResearchArea.map((item) => {
                     return (
                       <div className="research_area">
                         <p>{item.name}</p>

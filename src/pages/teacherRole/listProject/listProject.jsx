@@ -16,7 +16,6 @@ export const ListProject = () => {
   const [dataTable, setDataTable] = useState([]);
   const [dataFake, setDataFake] = useState([]);
   const [dataTeacher, setDataTeacher] = useState({});
-
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -28,14 +27,11 @@ export const ListProject = () => {
             .toLowerCase()
             .includes(currentValue.toLowerCase());
         });
-        console.log(filteredData);
         setDataTable(filteredData);
       } else {
         setDataTable(dataFake);
       }
     } else if (typeof currentValue === "number") {
-      console.log(123);
-
       if (!isNaN(currentValue)) {
         const filteredData = dataFake.filter((entry) =>
           entry.number.toString().includes(currentValue.toString())
@@ -97,7 +93,7 @@ export const ListProject = () => {
         let dateObj = new Date(dataAll.created_time);
 
         const year = dateObj.getFullYear();
-        const month = (dateObj.getMonth() + 1).toString().padStart(2, "0"); 
+        const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
         const day = dateObj.getDate().toString().padStart(2, "0");
 
         const formattedDate = `${day}-${month}-${year}`;
@@ -125,13 +121,25 @@ export const ListProject = () => {
     },
   ];
 
-  const [semester, setSemester] = useState('20231');
+  const [semester, setSemester] = useState("20231");
 
-  // const handleSemesterChange = async (selectedSemester) => {
-  //   setSemester(selectedSemester);
-  //   const data = await getAllUserByPosition(`STUDENT&semester=${selectedSemester}`);
-  //   setDataAll(data);
-  // };
+  const handleSemesterChange = async (selectedSemester) => {
+    setSemester(selectedSemester);
+    if (selectedSemester === "20231") {
+      setLoading(true);
+      try {
+        const data = await getAllProject(localStorage.getItem("userId"));
+        setDataTable(data.students);
+      } catch (error) {
+        console.error("Error fetchingsetDataAll project data:", error);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setDataTable([]);
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="list-student mb-4">
@@ -158,14 +166,14 @@ export const ListProject = () => {
             paddingLeft: 10,
           }}
         />
-        <div className='select-semester'>
-          <span style={{ color: "black" }} >Kỳ học: </span>
-          <Select defaultValue="20231" 
-          // onChange={handleSemesterChange}
-          options={optionYear}
-          style={{ width: 120 }} >
-
-          </Select>
+        <div className="select-semester">
+          <span style={{ color: "black" }}>Kỳ học: </span>
+          <Select
+            defaultValue="20231"
+            onChange={handleSemesterChange}
+            options={optionYear}
+            style={{ width: 120 }}
+          ></Select>
         </div>
       </div>
 

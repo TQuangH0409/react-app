@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./infoProject.css";
 import {
+  Alert,
   Button,
   Form,
   Image,
@@ -8,6 +9,7 @@ import {
   InputNumber,
   Modal,
   Select,
+  Space,
   Upload,
   message,
 } from "antd";
@@ -16,6 +18,8 @@ import {
   getAllProject,
   getInfoProject,
   getInfoProjectByStudentId,
+  getResearchAreas,
+  getTeacherOrStudentById,
   postFile,
   postProject,
   putProject,
@@ -31,7 +35,7 @@ import { getProjectById, getProjectByStudent } from "../../../apis/apiProject";
 
 export default function InfoProject() {
   const [dataProject, setDataProject] = useState([]);
-  const [isProject, setIsProject] = useState(true);
+  const [isNotProject, setIsNotProject] = useState(false);
   const [dataStudent, setDataStudent] = useState({});
   const [dataTeacher, setDataTeacher] = useState({});
   const [modal1Open, setModal1Open] = useState(false);
@@ -43,7 +47,14 @@ export default function InfoProject() {
   const [middleMark, setMiddleMark] = useState(null);
   const [finalMark, setFinalMark] = useState(null);
 
-  const [isReload , setIsReload] = useState(true)
+  const [isReload, setIsReload] = useState(true);
+  const [success, setSusccess] = useState(false);
+  const [warning, setWarning] = useState(false);
+  const [infomation, setInfomation] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(false);
+
+  const [researchArea, setResearchArea] = useState([]);
+  const [selectedArea, setSelectedArea] = useState([]);
 
   const student_id = window.location.pathname.slice(
     22,
@@ -51,77 +62,57 @@ export default function InfoProject() {
   );
 
   useEffect(() => {
-    const fetchData = async () => {
+    const getInfoTeacher = async () => {
       try {
-        const data = await getAllProject(localStorage.getItem("userId"));
-        const getStudentById = data.students.filter(
-          (item) => item.id === student_id
+        const teacherInfo = await getTeacherOrStudentById(
+          localStorage.getItem("userId")
         );
-        setDataStudent(getStudentById[0]);
-        setDataTeacher(data.teacher);
+        setDataTeacher(teacherInfo);
       } catch (error) {
         console.error("Error fetching student data:", error);
       }
     };
-    fetchData();
+    getInfoTeacher();
   }, [isReload]);
 
   useEffect(() => {
-    const getProject = async () => {
+    const getData = async () => {
       try {
-        const proI = await getProjectByStudent(student_id);
-        const pro = await getProjectById(proI.id);
-        setDataProject(pro);
+        const dataResearchAreas = await getResearchAreas();
+        setResearchArea(dataResearchAreas);
       } catch (error) {
-        setIsProject(false);
+        console.error("Error get research areas teacher:", error);
+      }
+    };
+    getData();
+  }, []);
+
+  useEffect(() => {
+    const getInfoStudent = async () => {
+      try {
+        const studentInfo = await getTeacherOrStudentById(student_id);
+        setDataStudent(studentInfo);
+      } catch (error) {
         console.error("Error fetching student data:", error);
       }
     };
-    getProject();
-  }, []);
+    getInfoStudent();
+  }, [isReload]);
+
+  useEffect(() => {
+    const getInfoProject = async () => {
+      try {
+        const projectByStudentId = await getProjectByStudent(student_id);
+        const projectById = await getProjectById(projectByStudentId.id);
+        setDataProject(projectById);
+        setIsNotProject(true);
+      } catch (error) {}
+    };
+    getInfoProject();
+  }, [isReload]);
 
   const handleChangeNameProject = (e) => {
     setNameProject(e.target.value);
-  };
-
-  const handleInfoProject = (id) => {
-    if (isProject) {
-      const putDataProject = async () => {
-        try {
-          await putProject({ name: nameProject }, id);
-          setModal1Open(false);
-          setIsReload(!isReload)
-        } catch (error) {
-          console.error("Error fetching student data:", error);
-          setModal1Open(true);
-        }
-      };
-      putDataProject();
-    } else {
-      const postData = async () => {
-        try {
-          const data = {
-            name: nameProject,
-            student_id: student_id,
-            discription: {
-              content: descProject,
-              attach: "1k6E0tsBbZm2QzVRqcaoXdRzPwx5qUyOm",
-            },
-            research_area: function () {
-              dataTeacher.research_area.map((item) => item.number);
-            },
-          };
-          await postProject(data);
-          setModal1Open(false);
-          setIsReload(!isReload)
-
-        } catch (error) {
-          console.error("Error fetching student data:", error);
-          setModal1Open(true);
-        }
-      };
-      postData();
-    }
   };
 
   const handleEvaluateProject = (id) => {
@@ -145,25 +136,79 @@ export default function InfoProject() {
     evaluateProject();
   };
 
+  const [postSelectedArea, setPostSelectedArea] = useState([]);
+
+  const handleResearchAreaChange = (selectedValues, OptionSelected) => {
+    setSelectedArea(
+      selectedValues.map((value, index) => {
+        return {
+          name: value,
+          number: OptionSelected[index].number,
+        };
+      })
+    );
+
+    setPostSelectedArea(OptionSelected.map((item) => item.number));
+  };
+
+  const [formData, setFormData] = useState(null);
   const handleUpload = async ({ file, onSuccess, onError }) => {
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      // You may need to adjust the API endpoint based on your server setup
-      const response = await postFile(formData);
-
-      // Assuming the server returns a success message
-      message.success(response.data.message);
-
-      // Invoke onSuccess to indicate a successful upload
+      const newFormData = new FormData();
+      newFormData.append("file", file);
+      setFormData(newFormData);
+      message.success("Thêm thành công!");
       onSuccess();
     } catch (error) {
-      // Handle errors
       console.error("File upload error:", error);
-
-      // Invoke onError to indicate a failed upload
       onError();
+    }
+  };
+  const handleInfoProject = (id) => {
+    if (isNotProject) {
+      const putDataProject = async () => {
+        try {
+          await putProject(
+            { name: nameProject, research_area: [...postSelectedArea] },
+            id
+          );
+          setModal1Open(false);
+          setSusccess(true);
+          setIsReload(!isReload);
+          setTimeout(() => {
+            setSusccess(false);
+          }, 3000);
+        } catch (error) {
+          console.error("Error fetching student data:", error);
+          setErrorMsg(true);
+          setModal1Open(true);
+        }
+      };
+      putDataProject();
+    } else {
+      const postDataProject = async () => {
+        try {
+          const fileReport = await postFile(formData);
+          const data = {
+            name: nameProject,
+            student_id: student_id,
+            discription: {
+              content: descProject,
+              attach: fileReport.objectId,
+            },
+            research_area: [...postSelectedArea],
+          };
+          await postProject(data);
+          setModal1Open(false);
+          setIsReload(!isReload);
+        } catch (error) {
+          console.error("Error fetching student data:", error);
+          setErrorMsg(true);
+
+          setModal1Open(true);
+        }
+      };
+      postDataProject();
     }
   };
 
@@ -180,18 +225,37 @@ export default function InfoProject() {
     reportFile();
   };
 
+  const onFinish = (values) => {
+    console.log("Success:", values);
+  };
+  const onFinishFailed = (errorInfo) => {
+    console.log("Failed:", errorInfo);
+  };
+
   return (
     <div className="container_project">
+      <Space
+        direction="vertical"
+        style={{
+          width: "100%",
+          position: "absolute",
+          zIndex: "100",
+          width: "400px",
+          top: 20,
+          right: "50%",
+          transform: "translateX(50%)",
+        }}
+      >
+        {success && (
+          <Alert message="Thành công!" type="success" showIcon closable />
+        )}
+      </Space>
       <div className="container_project--info">
         <div className="container_project--top">
           <div className="container_project--topLeft">
             <h6>Thông tin sinh viên</h6>
             <div className="infoStudent">
-              <Image
-                width={"90%"}
-                height={"100%"}
-                src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"
-              />
+              <Image width={"90%"} height={"100%"} src={dataStudent.avatar} />
               <div>
                 <div className="infoStudent-inner">
                   <strong>Họ và tên:</strong>
@@ -203,19 +267,23 @@ export default function InfoProject() {
                 </div>
                 <div className="infoStudent-inner">
                   <strong>Lớp:</strong>
-                  <p>IT-LTU</p>
+                  <p>{dataStudent?.class}</p>
                 </div>
                 <div className="infoStudent-inner">
                   <strong>Khóa:</strong>
-                  <p>64</p>
+                  <p>{dataStudent?.gen}</p>
                 </div>
                 <div className="infoStudent-inner">
                   <strong>Trường/Viện:</strong>
-                  <p>CNTT&TT</p>
+                  <p>{dataStudent?.school}</p>
                 </div>
                 <div className="infoStudent-inner">
                   <strong>Email:</strong>
                   <p>{dataStudent?.email}</p>
+                </div>
+                <div className="infoStudent-inner">
+                  <strong>Kỳ học:</strong>
+                  <p>{dataStudent?.semester}</p>
                 </div>
               </div>
             </div>
@@ -223,11 +291,7 @@ export default function InfoProject() {
           <div className="container_project--topRight">
             <h6>Thông tin giảng viên</h6>
             <div className="infoTeacher">
-              <Image
-                width={"90%"}
-                height={"100%"}
-                src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"
-              />
+              <Image width={"90%"} height={"100%"} src={dataTeacher.avatar} />
               <div>
                 <div className="infoTeacher-inner">
                   <strong>Họ và tên:</strong>
@@ -243,7 +307,7 @@ export default function InfoProject() {
                 </div>
                 <div className="infoTeacher-inner">
                   <strong>Trường/Viện:</strong>
-                  <p>CNTT&TT</p>
+                  <p>Công nghệ thông tin & truyền thông</p>
                 </div>
                 <div className="infoTeacher-inner">
                   <strong>Email:</strong>
@@ -252,7 +316,7 @@ export default function InfoProject() {
                 <div className="infoTeacher-inner">
                   <strong>Lĩnh vực nghiên cứu:</strong>
                   <div>
-                    {dataTeacher.reseach_areas?.map((item) => (
+                    {dataTeacher.research_area?.map((item) => (
                       <div className="infoTeacher-inner_researhch-area">
                         <p style={{ marginRight: "50px" }}>{item.name}</p>
                         <p>{item.experience} năm</p>
@@ -266,7 +330,7 @@ export default function InfoProject() {
         </div>
         <div className="container_project--middle">
           <h6>
-            {isProject ? "Thông tin đồ án" : "Tạo đồ án"}
+            {isNotProject ? "Thông tin đồ án" : "Tạo đồ án"}
             <p style={{ "margin-bottom": "4px" }}>
               <Button
                 className="button-fix"
@@ -278,7 +342,7 @@ export default function InfoProject() {
               </Button>
             </p>
           </h6>
-          {isProject && (
+          {isNotProject && (
             <div className="container_project--middle-content">
               <div className="infoProject-inner">
                 <strong>Tên đề tài</strong>
@@ -323,20 +387,52 @@ export default function InfoProject() {
           )}
         </div>
         <Modal
-          title="Thêm mới đồ án"
+          title={isNotProject ? "Chỉnh sửa đồ án" : "Thêm mới đồ án"}
           centered
           open={modal1Open}
-          okText="Lưu"
+          okText={isNotProject ? "Lưu" : "Thêm mới"}
           cancelText="Hủy"
           onOk={() => handleInfoProject(dataProject.id)}
           onCancel={() => setModal1Open(false)}
         >
-          <Form layout="vertical">
-            <Form.Item label="Tên đề tài">
+          <Form
+            layout="vertical"
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
+          >
+            <Form.Item
+              rules={[
+                {
+                  required: true,
+                  message: "Bạn chưa nhập tên đề tài!",
+                },
+              ]}
+              name="projectname"
+              label="Tên đề tài"
+            >
               <Input
                 value={nameProject}
                 onChange={handleChangeNameProject}
                 placeholder="Đề tài..."
+              />
+            </Form.Item>
+            <Form.Item label="Lĩnh vực nghiên cứu">
+              <Select
+                mode="multiple"
+                value={selectedArea.map((item) => item.name)}
+                defaultValue={dataProject.research_area?.map(
+                  (item) => item.name
+                )}
+                style={{ width: "100%" }}
+                options={researchArea.map((field) => {
+                  return {
+                    value: field.name,
+                    label: field.name,
+                    number: field.number,
+                  };
+                })}
+                onChange={handleResearchAreaChange}
               />
             </Form.Item>
             <Form.Item label="Họ tên sinh viên">
@@ -345,11 +441,12 @@ export default function InfoProject() {
             <Form.Item label="Mã số sinh viên">
               <Input disabled value={dataStudent?.number} />
             </Form.Item>
+
             <Form.Item label="Mô tả" name={["user", "introduction"]}>
               <Input.TextArea
-                disabled={isProject}
                 rows={5}
                 placeholder="Mô tả yêu cầu đồ án"
+                onChange={(e) => setDescProject(e.target.value)}
               />
             </Form.Item>
 
@@ -360,11 +457,7 @@ export default function InfoProject() {
               customRequest={handleUpload}
               accept=".pdf,.doc,.ppt,.pptx"
             >
-              <Button
-                disabled={isProject}
-                style={{ margin: 0 }}
-                icon={<UploadOutlined />}
-              >
+              <Button style={{ margin: 0 }} icon={<UploadOutlined />}>
                 Upload
               </Button>
             </Upload>
@@ -374,7 +467,7 @@ export default function InfoProject() {
         <div className="container_project--footer">
           <div className="project_evaluate">
             <h6>Đánh giá</h6>
-            {isProject && (
+            {isNotProject && (
               <div className="project_evaluate-content">
                 <Input.TextArea
                   placeholder="Thêm nhận xét"
@@ -382,7 +475,7 @@ export default function InfoProject() {
                   value={commentTeacher}
                   onChange={(e) => setCommentTeacher(e.target.value)}
                 ></Input.TextArea>
-                <div style={{display:"grid", flex:"1"}}>
+                <div style={{ display: "grid", flex: "1" }}>
                   <div style={{ width: "100%" }}>
                     <InputNumber
                       width={"100%"}
@@ -405,7 +498,7 @@ export default function InfoProject() {
                     />
                   </div>
                   <Button
-                    style={{ margin: "0"}}
+                    style={{ margin: "0" }}
                     type="primary"
                     htmlType="submit"
                     onClick={() => handleEvaluateProject(dataProject.id)}

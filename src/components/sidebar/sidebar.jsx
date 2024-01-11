@@ -2,15 +2,16 @@ import React, { useState } from "react";
 import "./sidebar.css";
 import { Menu } from "antd";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import logo from "../../assets/images/logo.png"
 
 const Sidebar = ({ user }) => {
   return (
     <div className="sidebar">
-      <Link to="/info-teacher" className="sidebar-logo " href="#">
+      <Link to="/teacher/info-teacher" className="sidebar-logo " href="#">
         <div className="sidebar-brand-icon align-items-center justify-content-center">
           <img
             className="sidebar-img"
-            src="../img/logo-dai-hoc-bach-khoa.png"
+            src={logo}
           />
         </div>
       </Link>
