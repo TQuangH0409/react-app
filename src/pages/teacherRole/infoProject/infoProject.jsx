@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./infoProject.css";
 import {
+  Alert,
   Button,
   Form,
   Image,
@@ -8,6 +9,7 @@ import {
   InputNumber,
   Modal,
   Select,
+  Space,
   Upload,
   message,
 } from "antd";
@@ -16,6 +18,8 @@ import {
   getAllProject,
   getInfoProject,
   getInfoProjectByStudentId,
+  getResearchAreas,
+  getTeacherOrStudentById,
   postFile,
   postProject,
   putProject,
@@ -32,7 +36,10 @@ import { getAllResearchArea } from "../../../apis/apiAdmin";
 
 export default function InfoProject() {
   const [dataProject, setDataProject] = useState([]);
-  const [isProject, setIsProject] = useState(true);
+  const [teacherRank, setTeacherRank] = useState("");
+  const [teacherSchool, setTeacherSchool] = useState("");
+
+  const [isNotProject, setIsNotProject] = useState(false);
   const [dataStudent, setDataStudent] = useState({});
   const [dataTeacher, setDataTeacher] = useState({});
   const [modal1Open, setModal1Open] = useState(false);
@@ -44,121 +51,75 @@ export default function InfoProject() {
   const [middleMark, setMiddleMark] = useState(null);
   const [finalMark, setFinalMark] = useState(null);
 
-  const [isReload, setIsReload] = useState(true)
-  const [dataResearch, setDataResearch] = useState([]);
-  const [info] = Form.useForm();
+  const [isReload, setIsReload] = useState(true);
+  const [success, setSusccess] = useState(false);
+  const [warning, setWarning] = useState(false);
+  const [infomation, setInfomation] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(false);
+
+  const [researchArea, setResearchArea] = useState([]);
+  const [selectedArea, setSelectedArea] = useState([]);
 
   const student_id = window.location.pathname.slice(
     22,
     window.location.pathname.length
   );
 
-  const dataSelect =
-    dataResearch?.length &&
-    dataResearch.map((value) => {
-      return {
-        value: value.number,
-        label: value.name,
-      }
-    });
-
   useEffect(() => {
-    const fetchData = async () => {
+    const getInfoTeacher = async () => {
       try {
-        const data = await getAllProject(localStorage.getItem("userId"));
-        const getStudentById = data.students.filter(
-          (item) => item.id === student_id
+        const teacherInfo = await getTeacherOrStudentById(
+          localStorage.getItem("userId")
         );
-        setDataStudent(getStudentById[0]);
-        console.log(dataStudent)
-        setDataTeacher(data.teacher);
+        setDataTeacher(teacherInfo);
+        setTeacherRank("Tiến sĩ")
+        setTeacherSchool("Trường công nghệ thông tin & truyền thông")
       } catch (error) {
         console.error("Error fetching student data:", error);
       }
     };
-    fetchData();
-  }, []);
+    getInfoTeacher();
+  }, [isReload]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const getData = async () => {
       try {
-        const data = await getAllResearchArea();
-        setDataResearch(data)
+        const dataResearchAreas = await getResearchAreas();
+        setResearchArea(dataResearchAreas);
       } catch (error) {
-        console.error('Error fetching student data:', error);
+        console.error("Error get research areas teacher:", error);
       }
     };
-    fetchData();
+    getData();
   }, []);
 
   useEffect(() => {
-    const getProject = async () => {
+    const getInfoStudent = async () => {
       try {
-        const proI = await getProjectByStudent(student_id);
-        const pro = await getProjectById(proI.id);
-        setDataProject(pro);
+        const studentInfo = await getTeacherOrStudentById(student_id);
+        setDataStudent(studentInfo);
       } catch (error) {
-        setIsProject(false);
         console.error("Error fetching student data:", error);
       }
     };
-    getProject();
-  }, []);
+    getInfoStudent();
+  }, [isReload]);
 
   useEffect(() => {
-    if (dataStudent && isProject === false) {
-      const dataIDandName = {
-        fullname: dataStudent.fullname,
-        id: dataStudent.id
-      }
-      info.setFieldsValue(dataIDandName);
-    }
-  }, [dataStudent]);
+    const getInfoProject = async () => {
+      try {
+        const projectByStudentId = await getProjectByStudent(student_id);
+        const projectById = await getProjectById(projectByStudentId.id);
+        setDataProject(projectById);
+
+        setIsNotProject(true);
+      } catch (error) {}
+    };
+    getInfoProject();
+  }, [isReload]);
 
   const handleChangeNameProject = (e) => {
     setNameProject(e.target.value);
-  };
-
-  const handleInfoProject = (id) => {
-    if (isProject) {
-      const putDataProject = async () => {
-        try {
-          await putProject({ name: nameProject }, id);
-          setModal1Open(false);
-          setIsReload(!isReload)
-        } catch (error) {
-          console.error("Error fetching student data:", error);
-          setModal1Open(true);
-        }
-      };
-      putDataProject();
-    } else {
-      const postData = async () => {
-        try {
-          
-          const formValues = await info.validateFields();
-          
-          const researchAreaArray = formValues.research_area.map(area => area.value);
-
-          // Tạo một đối tượng mới với các trường bổ sung
-          const additionalFields = {
-            research_area: researchAreaArray
-          };
-
-          // Kết hợp formValues và additionalFields
-          const values = { ...formValues, ...additionalFields };
-          console.log(values)
-          const res = await postProject(values);
-          setModal1Open(false);
-          setIsReload(!isReload)
-
-        } catch (error) {
-          console.error("Error fetching student data:", error);
-          setModal1Open(true);
-        }
-      };
-      postData();
-    }
   };
 
   const handleEvaluateProject = (id) => {
@@ -182,295 +143,381 @@ export default function InfoProject() {
     evaluateProject();
   };
 
-  const props = {
-    name: 'file',
-    accept: "application/pdf",
-    action: "https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188",
-    headers: {
-      authorization: 'authorization-text',
-    },
-    onChange(info) {
-      if (info.file.status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
-      if (info.file.status === 'done') {
-        message.success(`${info.file.name} file uploaded successfully`);
-      } else if (info.file.status === 'error') {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
-    
+  const [postSelectedArea, setPostSelectedArea] = useState([]);
 
+  const handleResearchAreaChange = (selectedValues, OptionSelected) => {
+    setSelectedArea(
+      selectedValues.map((value, index) => {
+        return {
+          name: value,
+          number: OptionSelected[index].number,
+        };
+      })
+    );
+
+    setPostSelectedArea(OptionSelected.map((item) => item.number));
   };
 
-const handleUpload = async ({ file, onSuccess, onError }) => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    // You may need to adjust the API endpoint based on your server setup
-    const response = await postFile(formData);
-
-    // Assuming the server returns a success message
-    message.success(response.data.message);
-
-    // Invoke onSuccess to indicate a successful upload
-    onSuccess();
-  } catch (error) {
-    // Handle errors
-    console.error("File upload error:", error);
-
-    // Invoke onError to indicate a failed upload
-    onError();
-  }
-};
-
-const handleDownFile = (idReportFile) => {
-  const reportFile = async () => {
+  const [formData, setFormData] = useState(null);
+  const handleUpload = async ({ file, onSuccess, onError }) => {
     try {
-      const reportLink = await downFileReport(idReportFile);
-      setReportLinkFile(reportLink.webContentLink);
+      const newFormData = new FormData();
+      newFormData.append("file", file);
+      setFormData(newFormData);
+      message.success("Thêm thành công!");
+      onSuccess();
     } catch (error) {
-      console.error("Error fetching student data:", error);
-      setModal1Open(true);
+      console.error("File upload error:", error);
+      onError();
     }
   };
-  reportFile();
-};
+  const handleInfoProject = (id) => {
+    if (isNotProject) {
+      const putDataProject = async () => {
+        try {
+          await putProject(
+            { name: nameProject, research_area: [...postSelectedArea] },
+            id
+          );
+          setModal1Open(false);
+          setSusccess(true);
+          setIsReload(!isReload);
+          setTimeout(() => {
+            setSusccess(false);
+          }, 3000);
+        } catch (error) {
+          console.error("Error fetching student data:", error);
+          setErrorMsg(true);
+          setModal1Open(true);
+        }
+      };
+      putDataProject();
+    } else {
+      const postDataProject = async () => {
+        try {
+          const fileReport = await postFile(formData);
+          const data = {
+            name: nameProject,
+            student_id: student_id,
+            discription: {
+              content: descProject,
+              attach: fileReport.objectId,
+            },
+            research_area: [...postSelectedArea],
+          };
+          await postProject(data);
+          setModal1Open(false);
+          setIsReload(!isReload);
+        } catch (error) {
+          console.error("Error fetching student data:", error);
+          setErrorMsg(true);
 
-return (
-  <div className="container_project">
-    <div className="container_project--info">
-      <div className="container_project--top">
-        <div className="container_project--topLeft">
-          <h6>Thông tin sinh viên</h6>
-          <div className="infoStudent">
-            <Image
-              width={"90%"}
-              height={"100%"}
-              src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"
-            />
-            <div>
-              <div className="infoStudent-inner">
-                <strong>Họ và tên:</strong>
-                <p>{dataStudent?.fullname}</p>
-              </div>
-              <div className="infoStudent-inner">
-                <strong>Mã số sinh viên:</strong>
-                <p>{dataStudent?.number}</p>
-              </div>
-              <div className="infoStudent-inner">
-                <strong>Lớp:</strong>
-                <p>IT-LTU</p>
-              </div>
-              <div className="infoStudent-inner">
-                <strong>Khóa:</strong>
-                <p>64</p>
-              </div>
-              <div className="infoStudent-inner">
-                <strong>Trường/Viện:</strong>
-                <p>CNTT&TT</p>
-              </div>
-              <div className="infoStudent-inner">
-                <strong>Email:</strong>
-                <p>{dataStudent?.email}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="container_project--topRight">
-          <h6>Thông tin giảng viên</h6>
-          <div className="infoTeacher">
-            <Image
-              width={"90%"}
-              height={"100%"}
-              src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"
-            />
-            <div>
-              <div className="infoTeacher-inner">
-                <strong>Họ và tên:</strong>
-                <p>{dataTeacher?.fullname}</p>
-              </div>
-              <div className="infoTeacher-inner">
-                <strong>Mã số giảng viên:</strong>
-                <p>{dataTeacher?.number}</p>
-              </div>
-              <div className="infoTeacher-inner">
-                <strong>Cấp bậc:</strong>
-                <p>Tiến sĩ</p>
-              </div>
-              <div className="infoTeacher-inner">
-                <strong>Trường/Viện:</strong>
-                <p>CNTT&TT</p>
-              </div>
-              <div className="infoTeacher-inner">
-                <strong>Email:</strong>
-                <p>{dataTeacher?.email}</p>
-              </div>
-              <div className="infoTeacher-inner">
-                <strong>Lĩnh vực nghiên cứu:</strong>
-                <div>
-                  {dataTeacher.reseach_areas?.map((item) => (
-                    <div className="infoTeacher-inner_researhch-area">
-                      <p style={{ marginRight: "50px" }}>{item.name}</p>
-                      <p>{item.experience} năm</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="container_project--middle">
-        <h6>
-          {isProject ? "Thông tin đồ án" : "Tạo đồ án"}
-          <p style={{ "margin-bottom": "4px" }}>
-            <Button
-              className="button-fix"
-              onClick={() => setModal1Open(true)}
-              shape="circle"
-              icon={<FormOutlined />}
-            >
-              {" "}
-            </Button>
-          </p>
-        </h6>
-        {isProject && (
-          <div className="container_project--middle-content">
-            <div className="infoProject-inner">
-              <strong>Tên đề tài</strong>
-              <p>{dataProject.name}</p>
-            </div>
-            <div className="infoProject-inner">
-              <strong>Source code</strong>
-              <a
-                style={{ marginBottom: "16px" }}
-                href={dataProject?.source_code}
-                target="_blank"
-              >
-                {dataProject?.source_code}
-              </a>
-            </div>
-            <div className="infoProject-inner">
-              <strong>Báo cáo</strong>
-              <div style={{ display: "flex" }}>
-                {dataProject.report?.map((item, index) => {
-                  return (
-                    <a
-                      onClick={() => handleDownFile(item.objectId)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        cursor: "pointer",
-                        fontSize: "13px",
-                      }}
-                      href={reportFileLink}
-                      download
-                    >
-                      <DownloadOutlined />
-                      <p style={{ margin: "0 20px 0 4px" }}>
-                        Báo cáo lần {index + 1}
-                      </p>
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-      <Modal
-        title="Thêm mới đồ án"
-        centered
-        open={modal1Open}
-        okText="Lưu"
-        cancelText="Hủy"
-        onOk={() => handleInfoProject(dataProject.id)}
-        onCancel={() => setModal1Open(false)}
+          setModal1Open(true);
+        }
+      };
+      postDataProject();
+    }
+  };
+
+  const handleDownFile = (idReportFile) => {
+    const reportFile = async () => {
+      try {
+        const reportLink = await downFileReport(idReportFile);
+        setReportLinkFile(reportLink.webContentLink);
+      } catch (error) {
+        console.error("Error fetching student data:", error);
+        setModal1Open(true);
+      }
+    };
+    reportFile();
+  };
+
+  const onFinish = (values) => {
+    console.log("Success:", values);
+  };
+  const onFinishFailed = (errorInfo) => {
+    console.log("Failed:", errorInfo);
+  };
+
+  return (
+    <div className="container_project">
+      <Space
+        direction="vertical"
+        style={{
+          width: "100%",
+          position: "absolute",
+          zIndex: "100",
+          width: "400px",
+          top: 20,
+          right: "50%",
+          transform: "translateX(50%)",
+        }}
       >
-        <Form form={info} layout="vertical">
-          <Form.Item name="name" label="Tên đề tài">
-            <Input
-              value={nameProject}
-              onChange={handleChangeNameProject}
-              placeholder="Đề tài..."
-            />
-          </Form.Item>
-          <Form.Item label="Họ tên sinh viên" name="fullname" >
-            <Input readOnly />
-          </Form.Item>
-          <Form.Item hidden label="Mã số sinh viên" name="id" >
-            <Input readOnly />
-          </Form.Item>
-          <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area">
-            <Select mode='multiple' labelInValue optionLabelProp="label" options={dataSelect}>
-
-            </Select>
-          </Form.Item>
-          <Form.Item label="Mô tả" name="content" >
-            <Input.TextArea
-              disabled={isProject}
-              rows={5}
-              placeholder="Mô tả yêu cầu đồ án"
-            />
-          </Form.Item>
-
-          <Upload
-            {...props}
-          >
-            <Button icon={<UploadOutlined />}>Click to Upload</Button>
-          </Upload>
-        </Form>
-      </Modal>
-
-      <div className="container_project--footer">
-        <div className="project_evaluate">
-          <h6>Đánh giá</h6>
-          {isProject && (
-            <div className="project_evaluate-content">
-              <Input.TextArea
-                placeholder="Thêm nhận xét"
-                rows={6}
-                value={commentTeacher}
-                onChange={(e) => setCommentTeacher(e.target.value)}
-              ></Input.TextArea>
-              <div style={{ display: "grid", flex: "1" }}>
-                <div style={{ width: "100%" }}>
-                  <InputNumber
-                    width={"100%"}
-                    min={0}
-                    max={10}
-                    size="large"
-                    placeholder="Nhập điểm quá trình"
-                    value={middleMark}
-                    onChange={(e) => setMiddleMark(e)}
-                  />
+        {success && (
+          <Alert message="Thành công!" type="success" showIcon closable />
+        )}
+      </Space>
+      <div className="container_project--info">
+        <div className="container_project--top">
+          <div className="container_project--topLeft">
+            <h6>Thông tin sinh viên</h6>
+            <div className="infoStudent">
+              <Image width={"90%"} height={"100%"} src={dataStudent.avatar} />
+              <div>
+                <div className="infoStudent-inner">
+                  <strong>Họ và tên:</strong>
+                  <p>{dataStudent?.fullname}</p>
                 </div>
-                <div style={{ width: "100%" }}>
-                  <InputNumber
-                    min={0}
-                    max={10}
-                    size="large"
-                    placeholder="Nhập điểm cuối kì"
-                    value={finalMark}
-                    onChange={(e) => setFinalMark(e)}
-                  />
+                <div className="infoStudent-inner">
+                  <strong>Mã số sinh viên:</strong>
+                  <p>{dataStudent?.number}</p>
                 </div>
-                <Button
-                  style={{ margin: "0" }}
-                  type="primary"
-                  htmlType="submit"
-                  onClick={() => handleEvaluateProject(dataProject.id)}
+                <div className="infoStudent-inner">
+                  <strong>Lớp:</strong>
+                  <p>{dataStudent?.class}</p>
+                </div>
+                <div className="infoStudent-inner">
+                  <strong>Khóa:</strong>
+                  <p>{dataStudent?.gen}</p>
+                </div>
+                <div className="infoStudent-inner">
+                  <strong>Trường/Viện:</strong>
+                  <p>{dataStudent?.school}</p>
+                </div>
+                <div className="infoStudent-inner">
+                  <strong>Email:</strong>
+                  <p>{dataStudent?.email}</p>
+                </div>
+                <div className="infoStudent-inner">
+                  <strong>Kỳ học:</strong>
+                  <p>{dataStudent?.semester}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="container_project--topRight">
+            <h6>Thông tin giảng viên</h6>
+            <div className="infoTeacher">
+              <Image width={"90%"} height={"100%"} src={dataTeacher.avatar} />
+              <div>
+                <div className="infoTeacher-inner">
+                  <strong>Họ và tên:</strong>
+                  <p>{dataTeacher?.fullname}</p>
+                </div>
+                <div className="infoTeacher-inner">
+                  <strong>Mã số giảng viên:</strong>
+                  <p>{dataTeacher?.number}</p>
+                </div>
+                <div className="infoTeacher-inner">
+                  <strong>Cấp bậc:</strong>
+                  <p>{teacherRank}</p>
+                </div>
+                <div className="infoTeacher-inner">
+                  <strong>Trường/Viện:</strong>
+                  <p>{teacherSchool}</p>
+                </div>
+                <div className="infoTeacher-inner">
+                  <strong>Email:</strong>
+                  <p>{dataTeacher?.email}</p>
+                </div>
+                <div className="infoTeacher-inner">
+                  <strong>Lĩnh vực nghiên cứu:</strong>
+                  <div>
+                    {dataTeacher.research_area?.map((item) => (
+                      <div className="infoTeacher-inner_researhch-area">
+                        <p style={{ marginRight: "50px" }}>{item.name}</p>
+                        <p>{item.experience} năm</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="container_project--middle">
+          <h6>
+            {isNotProject ? "Thông tin đồ án" : "Tạo đồ án"}
+            <p style={{ "margin-bottom": "4px" }}>
+              <Button
+                className="button-fix"
+                onClick={() => setModal1Open(true)}
+                shape="circle"
+                icon={<FormOutlined />}
+              >
+                {" "}
+              </Button>
+            </p>
+          </h6>
+          {isNotProject && (
+            <div className="container_project--middle-content">
+              <div className="infoProject-inner">
+                <strong>Tên đề tài</strong>
+                <p>{dataProject.name}</p>
+              </div>
+              <div className="infoProject-inner">
+                <strong>Source code</strong>
+                <a
+                  style={{ marginBottom: "16px" }}
+                  href={dataProject?.source_code}
+                  target="_blank"
                 >
-                  Gửi
-                </Button>
+                  {dataProject?.source_code}
+                </a>
+              </div>
+              <div className="infoProject-inner">
+                <strong>Báo cáo</strong>
+                <div style={{ display: "flex" }}>
+                  {dataProject.report?.map((item, index) => {
+                    return (
+                      <a
+                        onClick={() => handleDownFile(item.objectId)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          cursor: "pointer",
+                          fontSize: "13px",
+                        }}
+                        href={reportFileLink}
+                        download
+                      >
+                        <DownloadOutlined />
+                        <p style={{ margin: "0 20px 0 4px" }}>
+                          Báo cáo lần {index + 1}
+                        </p>
+                      </a>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
         </div>
+        <Modal
+          title={isNotProject ? "Chỉnh sửa đồ án" : "Thêm mới đồ án"}
+          centered
+          open={modal1Open}
+          okText={isNotProject ? "Lưu" : "Thêm mới"}
+          cancelText="Hủy"
+          onOk={() => handleInfoProject(dataProject.id)}
+          onCancel={() => setModal1Open(false)}
+        >
+          <Form
+            layout="vertical"
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            Báo cáo="off"
+          >
+            <Form.Item
+              rules={[
+                {
+                  required: true,
+                  message: "Bạn chưa nhập tên đề tài!",
+                },
+              ]}
+              name="projectname"
+              label="Tên đề tài"
+            >
+              <Input
+                value={nameProject}
+                onChange={handleChangeNameProject}
+                placeholder="Đề tài..."
+              />
+            </Form.Item>
+            <Form.Item label="Lĩnh vực nghiên cứu">
+              <Select
+                mode="multiple"
+                value={selectedArea.map((item) => item.name)}
+                defaultValue={dataProject.research_area?.map(
+                  (item) => item.name
+                )}
+                style={{ width: "100%" }}
+                options={researchArea.map((field) => {
+                  return {
+                    value: field.name,
+                    label: field.name,
+                    number: field.number,
+                  };
+                })}
+                onChange={handleResearchAreaChange}
+              />
+            </Form.Item>
+            <Form.Item label="Họ tên sinh viên">
+              <Input disabled value={dataStudent?.fullname} />
+            </Form.Item>
+            <Form.Item label="Mã số sinh viên">
+              <Input disabled value={dataStudent?.number} />
+            </Form.Item>
+
+            <Form.Item label="Mô tả" name={["user", "introduction"]}>
+              <Input.TextArea
+                rows={5}
+                placeholder="Mô tả yêu cầu đồ án"
+                onChange={(e) => setDescProject(e.target.value)}
+              />
+            </Form.Item>
+
+            <Upload
+              action={`http://localhost:3000/teacher/info-project/${student_id}`}
+              listType="picture"
+              multiple
+              customRequest={handleUpload}
+              accept=".pdf,.doc,.ppt,.pptx"
+            >
+              <Button style={{ margin: 0 }} icon={<UploadOutlined />}>
+                Upload
+              </Button>
+            </Upload>
+          </Form>
+        </Modal>
+
+        <div className="container_project--footer">
+          <div className="project_evaluate">
+            <h6>Đánh giá</h6>
+            {isNotProject && (
+              <div className="project_evaluate-content">
+                <Input.TextArea
+                  placeholder="Thêm nhận xét"
+                  rows={6}
+                  value={commentTeacher}
+                  onChange={(e) => setCommentTeacher(e.target.value)}
+                ></Input.TextArea>
+                <div style={{ display: "grid", flex: "1" }}>
+                  <div style={{ width: "100%" }}>
+                    <InputNumber
+                      width={"100%"}
+                      min={0}
+                      max={10}
+                      size="large"
+                      placeholder="Nhập điểm quá trình"
+                      value={middleMark}
+                      onChange={(e) => setMiddleMark(e)}
+                    />
+                  </div>
+                  <div style={{ width: "100%" }}>
+                    <InputNumber
+                      min={0}
+                      max={10}
+                      size="large"
+                      placeholder="Nhập điểm cuối kì"
+                      value={finalMark}
+                      onChange={(e) => setFinalMark(e)}
+                    />
+                  </div>
+                  <Button
+                    style={{ margin: "0" }}
+                    type="primary"
+                    htmlType="submit"
+                    onClick={() => handleEvaluateProject(dataProject.id)}
+                  >
+                    Gửi
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 }

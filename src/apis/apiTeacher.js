@@ -1,3 +1,4 @@
+import { Alert } from "antd";
 import axiosData from "./axiosData";
 
 const getAllProject = async (teacherId) => {
@@ -7,7 +8,7 @@ const getAllProject = async (teacherId) => {
     );
     return response.data;
   } catch (error) {
-    console.error(error);
+    <Alert message="Error" type="error" showIcon />
     throw error;
   }
 };
@@ -24,16 +25,15 @@ const getAllProjectReview = async (teacherId) => {
   }
 };
 
-const getTeacherById = async () => {
+const getTeacherOrStudentById = async (userId) => {
   try {
     const response = await axiosData().get(
-      `/users/${localStorage.getItem("userId")}`
+      `/users/${userId}`
     );
-
     return response.data;
   } catch (error) {
     console.error(error);
-    throw error; // Re-throw the error to handle it where the function is called
+    throw error;
   }
 };
 
@@ -43,7 +43,7 @@ const getInfoProjectByStudentId = async (student_id) => {
     return response.data;
   } catch (error) {
     console.error(error);
-    throw error; // Re-throw the error to handle it where the function is called
+    throw error; 
   }
 };
 
@@ -62,7 +62,7 @@ const putProject = async (data, id) => {
     const response = await axiosData().put(`/projects/${id}`, data);
     return response;
   } catch (error) {
-    console.error(error);
+    <Alert message="Error" type="error" showIcon />
     throw error; // Re-throw the error to handle it where the function is called
   }
 };
@@ -72,8 +72,8 @@ const postFile = async (file) => {
     const response = await axiosData().post(`/files/upload-file/`, file);
     return response.data;
   } catch (error) {
-    console.error(error);
-    throw error; // Re-throw the error to handle it where the function is called
+    <Alert message="Error" type="error" showIcon />
+    throw error;
   }
 };
 
@@ -118,10 +118,9 @@ const getResearchAreas = async () => {
   }
 };
 
-//   export {getAllProject , getUserById, getAllResearchArea}
 export {
   getAllProject,
-  getTeacherById,
+  getTeacherOrStudentById,
   getInfoProjectByStudentId,
   getInfoProject,
   getAllProjectReview,
