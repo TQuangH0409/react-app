@@ -3,6 +3,7 @@ import { Dropdown, Space } from "antd";
 import "./navbar.css";
 import { Link } from "react-router-dom";
 import { getTeacherOrStudentById } from "../../apis/apiTeacher";
+import avatar from "../../assets/images/avatar.png"
 
 const Navbar = () => {
   const [teacherInfo, setTeacherInfo] = useState({});
@@ -56,7 +57,8 @@ const Navbar = () => {
                 </span>
                 <img
                   className="img-profile rounded-circle"
-                  src={teacherInfo.avatar}
+                  src = {avatar}
+                  alt="avatar"
                 ></img>
               </Space>
             </a>

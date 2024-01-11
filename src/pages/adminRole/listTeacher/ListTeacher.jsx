@@ -291,9 +291,23 @@ const ListTeacher = () => {
     if (dataTeacher) {
       detail.setFieldsValue(dataTeacher);
       update.setFieldsValue(dataTeacher);
-      const researchAreaNames = dataTeacher.research_area.map(area => area.number);
-      detail.setFieldsValue({ research_area: researchAreaNames });
-      update.setFieldsValue({ research_area: researchAreaNames });
+      //const researchAreas = dataStudent.research_area.map(area => area.value);
+      
+      const researchAreas = dataTeacher.research_area.map(area => area.number);
+      console.log(researchAreas)
+      const researchOptions = dataTeacher.research_area.map(area => ({
+        value: area.value,
+        label: area.label,
+      }));
+
+      console.log('Research Areas:', researchAreas);
+
+      detail.setFieldsValue({ research_area: researchAreas });
+      update.setFieldsValue({ research_area: researchAreas });
+
+      // You may also set options for the Select component
+      detail.setFieldsValue({ researchOptions });
+      update.setFieldsValue({ researchOptions });
     }
   }, [dataTeacher, detail]);
 
@@ -559,7 +573,7 @@ const ListTeacher = () => {
             </Select>
           </Form.Item>
           <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area" >
-            <Select mode='multiple' disabled='true'>
+          <Select disabled='true' mode='multiple' optionLabelProp="label" options={dataSelect}>
 
             </Select>
           </Form.Item>
@@ -567,7 +581,7 @@ const ListTeacher = () => {
       </Modal>
 
       <Modal
-        title="Chi tiết"
+        title="Chỉnh sửa"
         centered
         open={modalUpdate}
         okText="OK"
@@ -598,7 +612,7 @@ const ListTeacher = () => {
             </Select>
           </Form.Item>
           <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area" rules={[{ required: true, message: 'Please input your content!' }]}>
-            <Select mode='multiple' options={dataSelect}>
+          <Select mode='multiple' optionLabelProp="label" options={dataSelect}>
 
             </Select>
           </Form.Item>
