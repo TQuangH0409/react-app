@@ -291,7 +291,7 @@ const ListTeacher = () => {
     if (dataTeacher) {
       detail.setFieldsValue(dataTeacher);
       update.setFieldsValue(dataTeacher);
-      const researchAreaNames = dataTeacher.research_area.map(area => area.name);
+      const researchAreaNames = dataTeacher.research_area.map(area => area.number);
       detail.setFieldsValue({ research_area: researchAreaNames });
       update.setFieldsValue({ research_area: researchAreaNames });
     }

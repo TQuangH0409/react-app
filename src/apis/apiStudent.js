@@ -16,3 +16,9 @@ export async function sendAvatar(file) {
 export async function getAvatar(id) {
   const res = await axiosData().get(`/files/${id}`);
 }
+
+export async function sendReport(file) {
+  const res = await axiosData().post(`/files/upload-file/`, file);
+  return res.data;
+}
+

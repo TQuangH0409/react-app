@@ -28,10 +28,11 @@ const InfoStudent = () => {
   });
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const s = await getUserById();
-        setStudent(s);
 
+      const s = await getUserById();
+      setStudent(s);
+      dispatch(setInfoStudent(s));
+      try {
         const ass = await getAss({
           student: localStorage.getItem("userId"),
           type: "INSTRUCT",
@@ -56,7 +57,7 @@ const InfoStudent = () => {
           const projectDetail = await getProjectById(project.id);
           dispatch(setInfoProject(projectDetail));
         }
-        dispatch(setInfoStudent(s));
+        
         dispatch(setInfoInstruct(instruct));
         dispatch(setInfoReview(review));
       } catch (error) {

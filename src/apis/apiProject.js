@@ -22,3 +22,8 @@ export async function getProjectById(id) {
   // }
   // return {};
 }
+
+export async function updateProject(id, body) {
+  const res = await axiosData().put(`/projects/${id}`, body);
+  return res.data;
+}

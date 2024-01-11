@@ -1,8 +1,9 @@
-import { Col, Row, Upload, message } from "antd";
+import { Col, Row, Upload, message, Modal, Input, } from "antd";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserById } from "../../apis/apiStudent";
-import { getProjectById, getProjectByStudent } from "../../apis/apiProject";
+import { getProjectById, getProjectByStudent, updateProject } from "../../apis/apiProject";
+import { sendReport } from "../../apis/apiStudent";
 import {
   setInfoInstruct,
   setInfoProject,
@@ -35,23 +36,54 @@ const InfoStudentProject = () => {
     setFileList(fileList);
   };
 
+  console.log(fileList)
+
   const uploadProps = {
     name: "file",
-    multiple: false,
     fileList,
+    multiple: true,
     onChange: handleFileChange,
-    beforeUpload: (file) => {
+    beforeUpload: async (file) => {
       // Add custom file type validation if needed
       const isFileTypeValid =
         file.type === "application/msword" ||
         file.type === "application/vnd.ms-excel" ||
         file.type ===
-          "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
+        file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
       if (!isFileTypeValid) {
         message.error("Only .doc, .xlsx, and .pptx files are allowed!");
         return false;
       }
-      return true;
+
+      if(fileList) {
+      try {
+        // Assuming this block is within an asynchronous function
+        const reportData = [];
+        
+        for (const file of fileList) {
+          const formData = new FormData();
+          formData.append("file", file);
+          const res = await sendReport(formData);
+          
+          reportData.push(res.objectId)
+
+        }
+
+        console.log(reportData)
+      
+        // The rest of your logic after successful API calls
+      
+      } catch (error) {
+        console.error("API Error:", error);
+        // Handle API error if needed
+        message.error("File upload failed. Please try again.");
+        return false; // Prevent the upload if the API call fails
+      }
+    }
+
+      // Return false to prevent immediate upload, since we'll handle it in the API call
+      return false;
     },
   };
 
@@ -66,7 +98,24 @@ const InfoStudentProject = () => {
   const [review, setReview] = useState(undefined);
   const [project, setProject] = useState(undefined);
   const [projectDetail, setProjectDetail] = useState(undefined);
+  const [modalSourceCode, isModalSourceCode] = useState(false);
+  const [sourceCode, setSourceCode] = useState('');
   const dispatch = useDispatch();
+
+  const handleSourceCodeChange = (event) => {
+    setSourceCode(event.target.value);
+  }
+
+  const handleUpdateSourceCode = async () => {
+    try {
+      const body = { source_code: sourceCode }
+      const res = await updateProject(projectDetail.id, body);
+      isModalSourceCode(false);
+    }
+    catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,7 +154,7 @@ const InfoStudentProject = () => {
         dispatch(setInfoInstruct(instruct));
         dispatch(setInfoReview(review));
         dispatch(setInfoProject(projectDetail));
-      } catch (error) {}
+      } catch (error) { }
     };
 
     fetchData();
@@ -304,7 +353,7 @@ const InfoStudentProject = () => {
             <Col span={8}>
               Source code
               {projectDetail && <EditOutlined
-                onClick={handleEditClick}
+                onClick={() => isModalSourceCode(true)}
                 style={{ marginLeft: 8 }}
               />}
               :
@@ -316,42 +365,36 @@ const InfoStudentProject = () => {
             </Col>
           </Row>
           <Row style={{ margin: "20px" }}>
-            <Col span={8} style={{ display: "flex" }}>
+            <Col span={12} style={{ display: "flex" }}>
               <p>Báo cáo</p>
-              {projectDetail && <Dragger
+              {projectDetail && <Upload
                 {...uploadProps}
-                style={{
-                  maxHeight: "24px",
-                  width: "24px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+
               >
                 <VerticalAlignTopOutlined />
-              </Dragger>}
+              </Upload>}
               <p>:</p>
             </Col>
             <Col span={12}>
               <Row>
-              {projectDetail && projectDetail?.report && projectDetail.map(r => {
-                return  <Col span={8} style={{ display: "flex" }}>
-                <p>{r.name}</p>
-                {projectDetail && <Dragger
-                  {...uploadProps}
-                  style={{
-                    maxHeight: "24px",
-                    width: "24px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <VerticalAlignTopOutlined />
-                </Dragger>}
-                <p>:</p>
-              </Col>
-              })}
+                {projectDetail && projectDetail?.report && projectDetail.report.map(r => {
+                  return <Col span={8} style={{ display: "flex" }}>
+                    <p>{r.name}</p>
+                    {projectDetail && <Dragger
+                      {...uploadProps}
+                      style={{
+                        maxHeight: "24px",
+                        width: "24px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <VerticalAlignTopOutlined />
+                    </Dragger>}
+                    <p>:</p>
+                  </Col>
+                })}
               </Row>
             </Col>
           </Row>
@@ -369,6 +412,9 @@ const InfoStudentProject = () => {
           </Row>
         </Col>
       </Row>
+      <Modal title="Thêm source code" open={modalSourceCode} onOk={handleUpdateSourceCode} onCancel={() => isModalSourceCode(false)}>
+        <Input value={sourceCode} onChange={handleSourceCodeChange} />
+      </Modal>
     </>
   );
 };

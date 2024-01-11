@@ -39,9 +39,7 @@ const UpdateStudent = (props) => {
   };
   const handleOk = async () => {
     const formValues = await update.validateFields();
-    const researchAreaArray = formValues.research_area.map((area) => ({
-      number: area,
-    }));
+    const researchAreaArray = formValues.research_area.map(area => ({ number: area }));
     const additionalFields = {
       research_area: researchAreaArray,
     };
@@ -70,7 +68,6 @@ const UpdateStudent = (props) => {
   const student = useSelector((state) => {
     return state.store.student;
   });
-  console.log(student)
 
   const dataSelect =
     dataResearch?.length &&

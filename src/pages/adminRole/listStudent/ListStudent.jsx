@@ -316,7 +316,7 @@ export const ListStudent = () => {
     if (dataStudent) {
       detail.setFieldsValue(dataStudent);
       update.setFieldsValue(dataStudent);
-      const researchAreas = dataStudent.research_area.map(area => area.name);
+      const researchAreas = dataStudent.research_area.map(area => area.number);
       detail.setFieldsValue({ research_area: researchAreas });
       update.setFieldsValue({ research_area: researchAreas });
     }
@@ -326,7 +326,8 @@ export const ListStudent = () => {
     setLoading(true)
     // Kiểm tra và lấy giá trị từ form
     const formValues = await update.validateFields();
-    const researchAreaArray = formValues.research_area.map(area => ({ number: area }));
+    const researchAreaArray = formValues.research_area.map((area) => ({ number: area }));
+    console.log(formValues.research_area)
     console.log("Research Area Objects:", researchAreaArray);
     // Tạo một đối tượng mới với các trường bổ sung
     const additionalFields = {
