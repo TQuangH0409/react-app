@@ -33,12 +33,11 @@ import TextArea from "antd/es/input/TextArea";
 import { Link } from "react-router-dom";
 import { getProjectById, getProjectByStudent } from "../../../apis/apiProject";
 import { getAllResearchArea } from "../../../apis/apiAdmin";
-
+import avatarUser from "../../../assets/images/avatar.png";
 export default function InfoProject() {
   const [dataProject, setDataProject] = useState([]);
   const [teacherRank, setTeacherRank] = useState("");
   const [teacherSchool, setTeacherSchool] = useState("");
-
   const [isNotProject, setIsNotProject] = useState(false);
   const [dataStudent, setDataStudent] = useState({});
   const [dataTeacher, setDataTeacher] = useState({});
@@ -72,8 +71,8 @@ export default function InfoProject() {
           localStorage.getItem("userId")
         );
         setDataTeacher(teacherInfo);
-        setTeacherRank("Tiến sĩ")
-        setTeacherSchool("Trường công nghệ thông tin & truyền thông")
+        setTeacherRank("Tiến sĩ");
+        setTeacherSchool("Trường Công nghệ thông tin & Truyền thông");
       } catch (error) {
         console.error("Error fetching student data:", error);
       }
@@ -111,16 +110,13 @@ export default function InfoProject() {
         const projectByStudentId = await getProjectByStudent(student_id);
         const projectById = await getProjectById(projectByStudentId.id);
         setDataProject(projectById);
-
+        setSelectedArea(projectById.research_area);
+        setNameProject(projectById.name);
         setIsNotProject(true);
       } catch (error) {}
     };
     getInfoProject();
   }, [isReload]);
-
-  const handleChangeNameProject = (e) => {
-    setNameProject(e.target.value);
-  };
 
   const handleEvaluateProject = (id) => {
     const evaluateProject = async () => {
@@ -175,10 +171,23 @@ export default function InfoProject() {
     if (isNotProject) {
       const putDataProject = async () => {
         try {
-          await putProject(
-            { name: nameProject, research_area: [...postSelectedArea] },
-            id
-          );
+          let fileReport = null;
+          if (formData) {
+            fileReport = await postFile(formData);
+          }
+          const data = {
+            name: nameProject,
+            student_id: student_id,
+            discription: {
+              content: descProject,
+              attach: fileReport ? fileReport.objectId : "",
+            },
+            research_area:
+              postSelectedArea.length > 0
+                ? [...postSelectedArea]
+                : selectedArea.map(item => item.number),
+          };
+          await putProject(data, id);
           setModal1Open(false);
           setSusccess(true);
           setIsReload(!isReload);
@@ -195,15 +204,21 @@ export default function InfoProject() {
     } else {
       const postDataProject = async () => {
         try {
-          const fileReport = await postFile(formData);
+          let fileReport = null;
+          if (formData) {
+            fileReport = await postFile(formData);
+          }
           const data = {
             name: nameProject,
             student_id: student_id,
             discription: {
               content: descProject,
-              attach: fileReport.objectId,
+              attach: fileReport ? fileReport.objectId : "",
             },
-            research_area: [...postSelectedArea],
+            research_area:
+              postSelectedArea.length > 0
+                ? [...postSelectedArea]
+                : selectedArea.map(item => item.number),
           };
           await postProject(data);
           setModal1Open(false);
@@ -247,7 +262,6 @@ export default function InfoProject() {
           width: "100%",
           position: "absolute",
           zIndex: "100",
-          width: "400px",
           top: 20,
           right: "50%",
           transform: "translateX(50%)",
@@ -262,7 +276,7 @@ export default function InfoProject() {
           <div className="container_project--topLeft">
             <h6>Thông tin sinh viên</h6>
             <div className="infoStudent">
-              <Image width={"90%"} height={"100%"} src={dataStudent.avatar} />
+              <Image width={"90%"} height={"100%"} src={avatarUser} />
               <div>
                 <div className="infoStudent-inner">
                   <strong>Họ và tên:</strong>
@@ -298,7 +312,7 @@ export default function InfoProject() {
           <div className="container_project--topRight">
             <h6>Thông tin giảng viên</h6>
             <div className="infoTeacher">
-              <Image width={"90%"} height={"100%"} src={dataTeacher.avatar} />
+              <Image width={"90%"} height={"100%"} src={avatarUser} />
               <div>
                 <div className="infoTeacher-inner">
                   <strong>Họ và tên:</strong>
@@ -361,6 +375,7 @@ export default function InfoProject() {
                   style={{ marginBottom: "16px" }}
                   href={dataProject?.source_code}
                   target="_blank"
+                  rel="noreferrer"
                 >
                   {dataProject?.source_code}
                 </a>
@@ -406,7 +421,7 @@ export default function InfoProject() {
             layout="vertical"
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
-            Báo cáo="off"
+            // Báocáo="off"
           >
             <Form.Item
               rules={[
@@ -415,12 +430,11 @@ export default function InfoProject() {
                   message: "Bạn chưa nhập tên đề tài!",
                 },
               ]}
-              name="projectname"
               label="Tên đề tài"
             >
               <Input
                 value={nameProject}
-                onChange={handleChangeNameProject}
+                onChange={(e) => setNameProject(e.target.value)}
                 placeholder="Đề tài..."
               />
             </Form.Item>
@@ -428,9 +442,6 @@ export default function InfoProject() {
               <Select
                 mode="multiple"
                 value={selectedArea.map((item) => item.name)}
-                defaultValue={dataProject.research_area?.map(
-                  (item) => item.name
-                )}
                 style={{ width: "100%" }}
                 options={researchArea.map((field) => {
                   return {

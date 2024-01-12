@@ -28,9 +28,6 @@ export const ListReviewProject = () => {
         setDataAll(data);
         setDataTable(data.projects);
         setDataTableFake(data.projects);
-
-        // setDataFake(data.students);
-        // setTeacher(data);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching student data:", error);
@@ -77,6 +74,25 @@ export const ListReviewProject = () => {
     },
   ];
 
+  const [semester, setSemester] = useState("20231");
+  const handleSemesterChange = async (selectedSemester) => {
+    setSemester(selectedSemester);
+    if (selectedSemester === "20231") {
+      setLoading(true);
+      try {
+        const projectReview = await getAllProjectReview(localStorage.getItem("userId"));
+        setDataTable(projectReview.projects);
+      } catch (error) {
+        console.error("Error fetchingsetDataAll project data:", error);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setDataTable([]);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="list-student mb-4">
       <div className="content-header py-3">
@@ -112,7 +128,7 @@ export const ListReviewProject = () => {
           <span style={{ color: "black" }}>Kỳ học: </span>
           <Select
             defaultValue="20231"
-            // onChange={handleSemesterChange}
+            onChange={handleSemesterChange}
             options={optionYear}
             style={{ width: 120 }}
           ></Select>

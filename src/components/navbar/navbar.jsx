@@ -3,7 +3,7 @@ import { Dropdown, Space } from "antd";
 import "./navbar.css";
 import { Link } from "react-router-dom";
 import { getTeacherOrStudentById } from "../../apis/apiTeacher";
-
+import avatarUser from "../.././assets/images/avatar.png"
 const Navbar = () => {
   const [teacherInfo, setTeacherInfo] = useState({});
   const [isReload, setIsReload] = useState(true);
@@ -26,7 +26,6 @@ const Navbar = () => {
     localStorage.removeItem("fullname");
     localStorage.removeItem("roles");
     localStorage.removeItem("token");
-    localStorage.removeItem("userId");
 
   };
   const items = [
@@ -56,7 +55,7 @@ const Navbar = () => {
                 </span>
                 <img
                   className="img-profile rounded-circle"
-                  src={teacherInfo.avatar}
+                  src={avatarUser}
                 ></img>
               </Space>
             </a>

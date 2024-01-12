@@ -24,6 +24,7 @@ import {
   postFile,
   putInfoTeacher,
 } from "../../../apis/apiTeacher";
+import avatarUser from "../../../assets/images/avatar.png";
 export default function InfoTeacher() {
   const [modal1Open, setModal1Open] = useState(false);
 
@@ -34,27 +35,28 @@ export default function InfoTeacher() {
   const [teacherEmail, setTeacherEmail] = useState("");
   const [teacherRank, setTeacherRank] = useState("");
   const [teacherSchool, setTeacherSchool] = useState("");
-  const [teacherResearchArea, setTeacherResearchArea] = useState([]);
+  const [selectedArea, setSeletedArea] = useState([]);
   const [isReload, setIsReload] = useState(true);
 
-  const [teacherSchoolSelected, setTeacherSchoolSelected] = useState("Trường CNTT&TT");
+  const [teacherSchoolSelected, setTeacherSchoolSelected] =
+    useState("Trường CNTT&TT");
   const [researchArea, setResearchArea] = useState([]);
   const [experience, setExperience] = useState(1);
 
   const handleResearchAreaChange = (selectedValues, valueSelected) => {
     try {
-      if (selectedValues.length <= 3) {
-        console.log(selectedValues, valueSelected);
-        setTeacherResearchArea(
-          selectedValues.map((value, index) => {
-            return {
-              name: value,
-              number: valueSelected[index].number,
-              experience: experience,
-            };
-          })
-        );
-      }
+      console.log(valueSelected);
+      setSeletedArea(
+        selectedValues.map((value, index) => {
+          console.log(value);
+          return {
+            name: value,
+            number: valueSelected[index].number,
+          };
+        })
+      );
+
+      
     } catch (error) {
       console.log(error);
     }
@@ -71,9 +73,9 @@ export default function InfoTeacher() {
         setTeacherName(data.fullname);
         setTeacherId(data.number);
         setTeacherEmail(data.email);
-        setTeacherRank("Tiến sĩ");
-        setTeacherSchool("Trường Công nghệ thông tin & truyền thông")
-        setTeacherResearchArea(data.research_area);
+        setTeacherRank(data.degree);
+        setSeletedArea(data.research_area);
+        setTeacherSchool("Trường Công nghệ thông tin & Truyền thông");
       } catch (error) {
         console.error("Error fetching student data:", error);
       }
@@ -113,7 +115,6 @@ export default function InfoTeacher() {
     try {
       let avatar = {};
       if (formData) {
-        console.log(formData);
         avatar = await postFile(formData);
       }
       await putInfoTeacher(teacherInfo.id, {
@@ -122,7 +123,7 @@ export default function InfoTeacher() {
         fullname: teacherName,
         number: teacherId,
         email: teacherEmail,
-        research_area: [...teacherResearchArea],
+        research_area: [...selectedArea],
       });
       setModal1Open(false);
       setIsReload(!isReload);
@@ -191,6 +192,7 @@ export default function InfoTeacher() {
         >
           {" "}
         </Button>
+
         <Modal
           title="Chỉnh sửa thông tin"
           centered
@@ -254,7 +256,9 @@ export default function InfoTeacher() {
                 style={{ width: "100%" }}
                 onChange={handleSchoolChange}
               >
-                <Select.Option value="School1">Trường Công nghệ thông tin & truyền thông</Select.Option>
+                <Select.Option value="School1">
+                  Trường Công nghệ thông tin & truyền thông
+                </Select.Option>
                 <Select.Option value="School2">
                   Trường Điện - điện tử
                 </Select.Option>
@@ -269,7 +273,7 @@ export default function InfoTeacher() {
             <Form.Item label="Lĩnh vực nghiên cứu">
               <Select
                 mode="multiple"
-                value={teacherResearchArea.map((item) => item.name)}
+                value={selectedArea.map((item) => item.name)}
                 style={{ width: "100%" }}
                 options={researchArea.map((field) => {
                   return {
@@ -282,12 +286,16 @@ export default function InfoTeacher() {
               />
             </Form.Item>
             <Form.Item label="Năm kinh nghiệm">
-              <InputNumber
-                min={1}
-                max={20}
-                value={teacherResearchArea[0]?.experience}
-                onChange={(value) => setExperience(value)}
-              />
+              {selectedArea.map((item, index) => {
+                return (
+                  <InputNumber
+                    min={1}
+                    max={20}
+                    value={item?.experience}
+                    onChange={(value) => setExperience(value)}
+                  />
+                );
+              })}
             </Form.Item>
           </Form>
         </Modal>
@@ -295,29 +303,33 @@ export default function InfoTeacher() {
 
       <div className="body">
         <div className="body_avatar">
-          <Image width={"100%"} height={"100%"} src={avatar} />
+          <Image width={"100%"} height={"100%"} src={avatarUser} />
         </div>
         {
           <div className="body_content">
             <div className="body_content_left">
               <div className="body_content_left--inner">
                 <strong>Họ và tên: </strong>
-                <p className="body_content_left--inner--name">{teacherName}</p>
+                <p className="body_content_left--inner--name">
+                  {teacherInfo.fullname}
+                </p>
               </div>
               <div className="body_content_left--inner">
                 <strong>Mã số giảng viên: </strong>
-                <p>{teacherId}</p>
+                <p>{teacherInfo.number}</p>
               </div>
               <div className="body_content_left--inner">
                 <strong>Email: </strong>
-                <p className="body_content_left--inner--name">{teacherEmail}</p>
+                <p className="body_content_left--inner--name">
+                  {teacherInfo.email}
+                </p>
               </div>
             </div>
 
             <div className="body_content_right">
               <div className="body_content_right--inner">
                 <strong>Cấp bậc: </strong>
-                <p>{teacherRank}</p>
+                <p>{teacherInfo.degree}</p>
               </div>
               <div className="body_content_right--inner">
                 <strong>Trường/Viện: </strong>
@@ -326,7 +338,7 @@ export default function InfoTeacher() {
               <div className="body_content_right--inner">
                 <strong>Lĩnh vực nghiên cứu: </strong>
                 <div>
-                  {teacherResearchArea.map((item) => {
+                  {teacherInfo.research_area?.map((item) => {
                     return (
                       <div className="research_area">
                         <p>{item.name}</p>
