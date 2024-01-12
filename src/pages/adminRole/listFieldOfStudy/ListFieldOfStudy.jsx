@@ -283,7 +283,7 @@ const ListFieldOfStudy = () => {
       </Modal>
 
       <Modal
-        title="Chi tiết"
+        title="Chỉnh sửa"
         centered
         open={modalUpdate}
         okText="OK"

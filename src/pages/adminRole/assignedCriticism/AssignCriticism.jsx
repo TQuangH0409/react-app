@@ -98,33 +98,70 @@ const AssignCriticism = () => {
   ];
 const [data, setData] = useState([]);
 
+  // const getDataCriticism = async () => {
+  //   if (review.length > 0) {
+  //     const newData = await Promise.all(review.map(async (e, i) => {
+  //       const project = await Promise.all(e.project.map(async (p) => {
+  //         const instruct = await getUserById(p.teacher_instruct_id);
+  //         const student = await getUserById(p.student_id);
+  //         return {
+  //           ...p,
+  //           student: student,
+  //           teacher: instruct,
+  //         };
+  //       }));
+  
+  //       return {
+  //         key: i.toString(),
+  //         STT: i.toString(),
+  //         name: e.teacher.fullname,
+  //         number: e.teacher.number,
+  //         school: e.teacher.school || "Trường công nghệ thông tin và truyền thông",
+  //         project: project,
+  //         teacher: e.teacher,
+  //       };
+  //     }));
+  
+  //     setData(newData);
+  //   }
+  // };
+
   const getDataCriticism = async () => {
-    if (review.length > 0) {
-      const newData = await Promise.all(review.map(async (e, i) => {
-        const project = await Promise.all(e.project.map(async (p) => {
-          const instruct = await getUserById(p.teacher_instruct_id);
-          const student = await getUserById(p.student_id);
+    if (review && review.length > 0) {
+      setLoading(true)
+      const newData = await Promise.all(
+        review.map(async (e, i) => {
+          const project = await Promise.all(
+            (e.projects||e.project).map(async (p) => {
+              const instruct = await getUserById(p.teacher_instruct_id);
+              const student = await getUserById(p.student_id);
+              return {
+                ...p,
+                student: student,
+                teacher: instruct,
+              };
+            })
+          );
+  
           return {
-            ...p,
-            student: student,
-            teacher: instruct,
+            key: i.toString(),
+            STT: i.toString(),
+            name: e.teacher.fullname,
+            number: e.teacher.number,
+            school: e.teacher.school || "Trường công nghệ thông tin và truyền thông",
+            project: project,
+            teacher: e.teacher,
           };
-        }));
-  
-        return {
-          key: i.toString(),
-          STT: i.toString(),
-          name: e.teacher.fullname,
-          number: e.teacher.number,
-          school: e.teacher.school || "Trường công nghệ thông tin và truyền thông",
-          project: project,
-          teacher: e.teacher,
-        };
-      }));
-  
+        })
+      );
+
       setData(newData);
+      setLoading(false)
     }
   };
+
+  
+
   
   useEffect(() => {
     getDataCriticism();
@@ -167,21 +204,32 @@ const [data, setData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true)
-      const res = await getListAssign(semester, "REVIEW")
-      if(res.data.length > 0 ) {
-        setReview(res.assignment);
-        getDataCriticism();
+      try {
+        setLoading(true);
+  
+        const res = await getListAssign(semester, "REVIEW");
+        console.log(res);
+  
+        if (res) {
+          console.log(res.assignment);
+          setReview(res.assignment);
+          getDataCriticism();
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false)
-    }
-  })
+    };
+  
+    fetchData(); // Call the fetchData function
+  }, []);
 
   const handleSemesterChange = async (selectedSemester) => {
     setSemester(selectedSemester);
     setLoading(true)
     const res = await getListAssign(selectedSemester, "REVIEW")
-    if(res.data.length > 0 ) {
+    if(res) {
       setReview(res.assignment);
       getDataCriticism();
     }

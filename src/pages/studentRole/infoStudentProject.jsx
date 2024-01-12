@@ -12,6 +12,7 @@ import {
 } from "../../hook/slice";
 import { getAss } from "../../apis/apiAss";
 import { EditOutlined, VerticalAlignTopOutlined } from "@ant-design/icons";
+import avatar from "../../assets/images/avatar.png"
 
 const { Dragger } = Upload;
 const InfoStudentProject = () => {
@@ -177,7 +178,7 @@ const InfoStudentProject = () => {
               <Col span={8}>
                 <div className="avatar">
                   <img
-                    src={instruct.avatar}
+                    src={avatar}
                     alt="Italian Trulli"
                     style={{
                       width: "100%",
@@ -260,7 +261,7 @@ const InfoStudentProject = () => {
               <Col span={8}>
                 <div className="avatar">
                   <img
-                    src={review?.avatar}
+                    src={avatar}
                     alt="Italian Trulli"
                     style={{
                       width: "100%",

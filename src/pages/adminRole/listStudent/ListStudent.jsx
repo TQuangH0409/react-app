@@ -316,9 +316,23 @@ export const ListStudent = () => {
     if (dataStudent) {
       detail.setFieldsValue(dataStudent);
       update.setFieldsValue(dataStudent);
+      //const researchAreas = dataStudent.research_area.map(area => area.value);
+      
       const researchAreas = dataStudent.research_area.map(area => area.number);
+      console.log(researchAreas)
+      const researchOptions = dataStudent.research_area.map(area => ({
+        value: area.value,
+        label: area.label,
+      }));
+
+      console.log('Research Areas:', researchAreas);
+
       detail.setFieldsValue({ research_area: researchAreas });
       update.setFieldsValue({ research_area: researchAreas });
+
+      // You may also set options for the Select component
+      detail.setFieldsValue({ researchOptions });
+      update.setFieldsValue({ researchOptions });
     }
   }, [dataStudent, detail]);
 
@@ -333,9 +347,11 @@ export const ListStudent = () => {
     const additionalFields = {
       research_area: researchAreaArray
     };
+    console.log(additionalFields);
 
     // Kết hợp formValues và additionalFields
     const values = { ...formValues, ...additionalFields };
+    
     const res = await updateUserById(id, values);
     update.resetFields()
     setModalUpdate(false)
@@ -613,7 +629,7 @@ export const ListStudent = () => {
             </Select>
           </Form.Item>
           <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area">
-            <Select mode='multiple' disabled='true'>
+            <Select mode='multiple' optionLabelProp="label" options={dataSelect} disabled='true'>
 
             </Select>
           </Form.Item>
@@ -621,7 +637,7 @@ export const ListStudent = () => {
       </Modal>
 
       <Modal
-        title="Chi tiết"
+        title="Chỉnh sửa"
         centered
         open={modalUpdate}
         okText="OK"
@@ -653,7 +669,7 @@ export const ListStudent = () => {
             </Select>
           </Form.Item>
           <Form.Item label="Lĩnh vực nghiên cứu:" name="research_area">
-            <Select mode='multiple' labelInValue optionLabelProp="label" options={dataSelect}>
+            <Select mode='multiple' optionLabelProp="label" options={dataSelect}>
 
             </Select>
           </Form.Item>

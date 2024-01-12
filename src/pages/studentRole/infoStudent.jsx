@@ -16,6 +16,7 @@ import {
 } from "../../hook/slice";
 import { EditOutlined } from "@ant-design/icons";
 import UpdateStudent from "./updateStudent";
+import avatar from "../../assets/images/avatar.png"
 
 const InfoStudent = () => {
   const [student, setStudent] = useState({});
@@ -87,7 +88,7 @@ const InfoStudent = () => {
             <Col span={8}>
               <div className="avatar">
                 <img
-                  src={student.avatar}
+                  src={avatar}
                   alt="Italian Trulli"
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
@@ -191,7 +192,7 @@ const InfoStudent = () => {
               <Col span={8}>
                 <div className="avatar">
                   <img
-                    //src={instruct.avatar}
+                    src={avatar}
                     alt="Italian Trulli"
                     style={{
                       width: "100%",
@@ -273,7 +274,7 @@ const InfoStudent = () => {
             <Col span={8}>
               <div className="avatar">
                 <img
-                  //src={review.avatar}
+                  src={avatar}
                   alt="Italian Trulli"
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
